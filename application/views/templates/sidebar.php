@@ -13,26 +13,27 @@
 
     <!-- Navigation Menu -->
     <nav class="flex-1 px-3 py-4 space-y-1">
-        <a href="<?= base_url() ?>" 
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800/40">
+        <a href="<?= base_url() ?>"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800/40">
             <i class="fa-solid fa-gauge-high w-5 text-center"></i>
             <span>Dashboard</span>
         </a>
 
-        <a href="#" 
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800/40">
+        <a href="#"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800/40">
             <i class="fa-solid fa-users w-5 text-center"></i>
             <span>Users</span>
         </a>
 
         <!-- Highlighted Active Link -->
-        <a href="<?= base_url() ?>" 
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition <?= (isset($active_menu) && $active_menu === 'add_user') ? 'bg-slate-800/80 text-white border border-slate-700/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/40' ?>">
+        <a href="<?= base_url() ?>"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition <?= (isset($active_menu) && $active_menu === 'add_user') ? 'bg-slate-800/80 text-white border border-slate-700/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/40' ?>">
             <i class="fa-solid fa-user-plus w-5 text-center text-blue-400"></i>
             <span>Add User</span>
         </a>
 
-        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/40">
+        <a href="<?= base_url('main/profile') ?>"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition <?= (isset($active_menu) && $active_menu === 'profile') ? 'bg-slate-800/80 text-white border border-slate-700/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/40' ?>">
             <i class="fa-regular fa-id-badge w-5 text-center"></i>
             <span>Profile</span>
         </a>
