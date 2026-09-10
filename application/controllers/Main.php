@@ -30,7 +30,6 @@ class Main extends CI_Controller
 
     public function index($page_view = null, $data = [])
     {
-
         echo "MAIN PAGE";
     }
 
@@ -147,7 +146,9 @@ class Main extends CI_Controller
         // $this->Visit_model->insert($visit_data);
 
         $this->session->set_flashdata('success', 'Visit details added successfully!');
-        redirect('main/view/' . $member_id);
+
+        // Fix: Redirect to member_details instead of raw dump view
+        redirect('main/member_details/' . $member_id);
     }
 
     public function profile($user_id = null)
