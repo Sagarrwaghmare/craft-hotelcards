@@ -55,7 +55,8 @@ $config['index_page'] = '';
 |
 | WARNING: If you set this to 'PATH_INFO', URIs will always be URL-decoded!
 */
-$config['uri_protocol']    = 'PATH_INFO';
+// $config['uri_protocol']    = 'PATH_INFO';
+$config['uri_protocol'] = 'REQUEST_URI';
 // var_dump($_SERVER['REQUEST_URI'],$_SERVER['QUERY_STRING'],$_SERVER['PATH_INFO'],);
 
 /*
