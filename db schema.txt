@@ -1,0 +1,59 @@
+127.0.0.1/hotelcards/		http://localhost/phpmyadmin/index.php?route=/database/sql&db=hotelcards
+Your SQL query has been executed successfully.
+
+1. DESCRIBE members;
+
+
+
+id	int(11)	NO	PRI	NULL	auto_increment	
+card_number	varchar(50)	NO	UNI	NULL		
+card_type	enum('Gold','Platinum','Silver')	NO		Gold		
+first_name	varchar(100)	NO		NULL		
+last_name	varchar(100)	NO		NULL		
+company_name	varchar(150)	YES		NULL		
+designation	varchar(100)	YES		NULL		
+contact_no	varchar(20)	YES		NULL		
+email	varchar(150)	YES		NULL		
+address	text	YES		NULL		
+dob	date	YES		NULL		
+anniversary	date	YES		NULL		
+marital_status	enum('Single','Married','Divorced','Widowed','Other')	YES		NULL		
+notes	text	YES		NULL		
+created_at	timestamp	NO		current_timestamp()		
+updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()	
+
+
+
+127.0.0.1/hotelcards/		http://localhost/phpmyadmin/index.php?route=/database/sql&db=hotelcards
+Your SQL query has been executed successfully.
+
+2. DESCRIBE users;
+
+
+
+id	int(11)	NO	PRI	NULL	auto_increment	
+name	varchar(100)	NO		NULL		
+email	varchar(150)	NO	UNI	NULL		
+contact_no	varchar(20)	YES		NULL		
+username	varchar(50)	NO	UNI	NULL		
+password_hash	varchar(255)	NO		NULL		
+access	enum('Admin','Editor','Viewer')	NO		Viewer		
+created_at	timestamp	NO		current_timestamp()		
+updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()	
+
+
+127.0.0.1/hotelcards/		http://localhost/phpmyadmin/index.php?route=/database/sql&db=hotelcards
+Your SQL query has been executed successfully.
+
+3. DESCRIBE visits;
+
+
+
+id	int(11)	NO	PRI	NULL	auto_increment	
+member_id	int(11)	NO	MUL	NULL		
+visit_date	date	NO		NULL		
+no_of_pax	int(11)	NO		NULL		
+apc	decimal(10,2)	NO		0.00		
+created_by	int(11)	YES	MUL	NULL		
+created_at	timestamp	NO		current_timestamp()		
+updated_at	timestamp	NO		current_timestamp()	on update current_timestamp()	

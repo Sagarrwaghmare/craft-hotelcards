@@ -32,7 +32,7 @@ class Main extends CI_Controller
     {
         // echo "MAIN PAGE";
 
-        
+
     }
 
     public function add_user()
@@ -65,15 +65,17 @@ class Main extends CI_Controller
 
     public function members()
     {
-        $data['title'] = 'Membership & Events Overview';
+        $this->load->model('Member_model');
+
+        $data['title']       = 'Membership & Events Overview';
         $data['active_menu'] = 'members';
 
-        // Counts for the metric cards
-        $data['gold_count'] = 42;
-        $data['platinum_count'] = 18;
+        // Dynamic counts for metric cards
+        $data['gold_count']     = $this->Member_model->count_by_type('Gold');
+        $data['platinum_count'] = $this->Member_model->count_by_type('Platinum');
 
-        // Optional: Pass dynamic DB results here later from Member_model
-        // $data['events'] = $this->Member_model->get_upcoming_events();
+        // Dynamic upcoming events sorted by upcoming date
+        $data['events'] = $this->Member_model->get_upcoming_events(25);
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
@@ -81,6 +83,8 @@ class Main extends CI_Controller
         $this->load->view('pages/display_members', $data);
         $this->load->view('templates/footer', $data);
     }
+
+
     public function members_list()
     {
         $data['title'] = 'Members Directory';
