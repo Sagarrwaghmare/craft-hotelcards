@@ -37,7 +37,6 @@ class Member_model extends CI_Model
     // Fetch upcoming birthdays and anniversaries starting from today
     public function get_upcoming_events($limit = 20)
     {
-        // Select members who have either a dob or anniversary set
         $this->db->where('dob IS NOT NULL', null, false);
         $this->db->or_where('anniversary IS NOT NULL', null, false);
         $members = $this->db->get($this->table)->result_array();
@@ -52,7 +51,6 @@ class Member_model extends CI_Model
             // 1. Process Birthday
             if (!empty($m['dob']) && $m['dob'] !== '0000-00-00') {
                 $dob = new DateTime($m['dob']);
-                // Event date in current year
                 $eventDate = new DateTime("{$currentYear}-{$dob->format('m-d')}");
                 if ($eventDate < $today) {
                     $eventDate->modify('+1 year');
@@ -95,12 +93,67 @@ class Member_model extends CI_Model
             }
         }
 
-        // Sort chronologically (closest event first)
         usort($events, function ($a, $b) {
             return strcmp($a['sort_date'], $b['sort_date']);
         });
 
         return array_slice($events, 0, $limit);
+    }
+
+    // Apply filters helper for search, type, and date ranges
+    private function _apply_filters($filters = [])
+    {
+        if (!empty($filters['search'])) {
+            $keyword = trim($filters['search']);
+            $this->db->group_start();
+            $this->db->like('first_name', $keyword);
+            $this->db->or_like('last_name', $keyword);
+            $this->db->or_like('card_number', $keyword);
+            $this->db->or_like('contact_no', $keyword);
+            $this->db->or_like("CONCAT(first_name, ' ', last_name)", $keyword);
+            $this->db->group_end();
+        }
+
+        if (!empty($filters['type'])) {
+            $this->db->where('card_type', $filters['type']);
+        }
+
+        if (!empty($filters['dob_from'])) {
+            $this->db->where('dob >=', $filters['dob_from']);
+        }
+
+        if (!empty($filters['dob_to'])) {
+            $this->db->where('dob <=', $filters['dob_to']);
+        }
+
+        if (!empty($filters['anniv_from'])) {
+            $this->db->where('anniversary >=', $filters['anniv_from']);
+        }
+
+        if (!empty($filters['anniv_to'])) {
+            $this->db->where('anniversary <=', $filters['anniv_to']);
+        }
+    }
+
+    // Get filtered members with optional pagination
+    public function get_filtered_members($filters = [], $limit = null, $offset = null)
+    {
+        $this->_apply_filters($filters);
+        $this->db->order_by('id', 'DESC');
+
+        if ($limit !== null) {
+            $this->db->limit($limit, $offset);
+        }
+
+        $query = $this->db->get($this->table);
+        return $query->result_array();
+    }
+
+    // Count total rows matching filters
+    public function count_filtered_members($filters = [])
+    {
+        $this->_apply_filters($filters);
+        return $this->db->count_all_results($this->table);
     }
 
     public function search($keyword)

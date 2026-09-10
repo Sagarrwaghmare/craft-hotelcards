@@ -6,10 +6,9 @@ class Main extends CI_Controller
     public function __construct()
     {
         parent::__construct();
-        // Load the URL helper for base_url() to work in views
         $this->load->helper('url');
+        $this->load->library('session');
     }
-
 
     public function view($member_id)
     {
@@ -23,34 +22,27 @@ class Main extends CI_Controller
         if (empty($data['member'])) {
             show_404();
         }
-        echo "<pre>";
-        var_dump($data);
-    }
 
+        redirect('main/member_details/' . $member_id);
+    }
 
     public function index($page_view = null, $data = [])
     {
-        // echo "MAIN PAGE";
-
-
+        $this->members();
     }
 
     public function add_user()
     {
-        $data['title'] = 'Add User';
+        $data['title']       = 'Add User';
         $data['active_menu'] = 'add_user';
 
-        // Load modular views
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
         $this->load->view('templates/navbar', $data);
         $this->load->view('templates/add', $data);
-
         $this->load->view('templates/footer', $data);
     }
 
-
-    // 1. Show Add Member Page
     public function add_member()
     {
         $data['title']       = 'Add Member';
@@ -67,15 +59,11 @@ class Main extends CI_Controller
     {
         $this->load->model('Member_model');
 
-        $data['title']       = 'Membership & Events Overview';
-        $data['active_menu'] = 'members';
-
-        // Dynamic counts for metric cards
+        $data['title']          = 'Membership & Events Overview';
+        $data['active_menu']    = 'members';
         $data['gold_count']     = $this->Member_model->count_by_type('Gold');
         $data['platinum_count'] = $this->Member_model->count_by_type('Platinum');
-
-        // Dynamic upcoming events sorted by upcoming date
-        $data['events'] = $this->Member_model->get_upcoming_events(25);
+        $data['events']         = $this->Member_model->get_upcoming_events(25);
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
@@ -84,30 +72,114 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-
     public function members_list()
     {
-        $data['title'] = 'Members Directory';
+        $this->load->model('Member_model');
+        $this->load->library('pagination');
+
+        $data['title']       = 'Members Directory';
         $data['active_menu'] = 'members_list';
 
-        // When ready to connect to your Member_model:
-        // $this->load->model('Member_model');
-        // $data['members'] = $this->Member_model->get_all_members();
+        // Extract and clean filters
+        $filters = [
+            'search'     => trim((string)$this->input->get('search', TRUE)),
+            'type'       => trim((string)$this->input->get('type', TRUE)),
+            'dob_from'   => trim((string)$this->input->get('dob_from', TRUE)),
+            'dob_to'     => trim((string)$this->input->get('dob_to', TRUE)),
+            'anniv_from' => trim((string)$this->input->get('anniv_from', TRUE)),
+            'anniv_to'   => trim((string)$this->input->get('anniv_to', TRUE)),
+        ];
+
+        // Total filtered count
+        $total_rows = $this->Member_model->count_filtered_members($filters);
+        $per_page   = 15;
+        $current_page = max(1, (int)$this->input->get('page'));
+        $offset     = ($current_page - 1) * $per_page;
+
+        // Fetch paginated member rows
+        $data['members']      = $this->Member_model->get_filtered_members($filters, $per_page, $offset);
+        $data['total_count']  = $total_rows;
+        $data['current_page'] = $current_page;
+        $data['per_page']     = $per_page;
+        $data['total_pages']  = max(1, ceil($total_rows / $per_page));
+        $data['filters']      = $filters;
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
         $this->load->view('templates/navbar', $data);
-        $this->load->view('pages/members_list', $data); // Loads this new file
+        $this->load->view('pages/members_list', $data);
         $this->load->view('templates/footer', $data);
     }
+
+    // Export members matching current active filters to CSV
+    public function export_members_csv()
+    {
+        $this->load->model('Member_model');
+
+        $filters = [
+            'search'     => trim((string)$this->input->get('search', TRUE)),
+            'type'       => trim((string)$this->input->get('type', TRUE)),
+            'dob_from'   => trim((string)$this->input->get('dob_from', TRUE)),
+            'dob_to'     => trim((string)$this->input->get('dob_to', TRUE)),
+            'anniv_from' => trim((string)$this->input->get('anniv_from', TRUE)),
+            'anniv_to'   => trim((string)$this->input->get('anniv_to', TRUE)),
+        ];
+
+        $members = $this->Member_model->get_filtered_members($filters);
+
+        $filename = 'members_export_' . date('Ymd_His') . '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $output = fopen('php://output', 'w');
+
+        // CSV Column Headers
+        fputcsv($output, [
+            'Sr.No',
+            'Card Number',
+            'Card Type',
+            'First Name',
+            'Last Name',
+            'Company',
+            'Designation',
+            'Contact No',
+            'Email',
+            'Address',
+            'DOB',
+            'Anniversary',
+            'Marital Status',
+            'Created At'
+        ]);
+
+        $sr = 1;
+        foreach ($members as $m) {
+            fputcsv($output, [
+                $sr++,
+                $m['card_number'],
+                $m['card_type'],
+                $m['first_name'],
+                $m['last_name'],
+                $m['company_name'] ?? '',
+                $m['designation'] ?? '',
+                $m['contact_no'] ?? '',
+                $m['email'] ?? '',
+                $m['address'] ?? '',
+                !empty($m['dob']) ? date('d-M-Y', strtotime($m['dob'])) : '',
+                !empty($m['anniversary']) ? date('d-M-Y', strtotime($m['anniversary'])) : '',
+                $m['marital_status'] ?? '',
+                $m['created_at'] ?? ''
+            ]);
+        }
+
+        fclose($output);
+        exit;
+    }
+
     public function users()
     {
-        $data['title'] = 'User Management';
+        $data['title']       = 'User Management';
         $data['active_menu'] = 'users';
-
-        // When connected to User_model later:
-        // $this->load->model('User_model');
-        // $data['users'] = $this->User_model->get_all();
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
@@ -115,7 +187,6 @@ class Main extends CI_Controller
         $this->load->view('pages/users_list', $data);
         $this->load->view('templates/footer', $data);
     }
-
 
     public function member_details($member_id = 1)
     {
@@ -125,10 +196,13 @@ class Main extends CI_Controller
         $data['title']       = 'Member Details';
         $data['active_menu'] = 'members';
 
-        // Fetch from models (falls back to mock data if empty for testing)
         $data['member']      = $this->Member_model->get_by_id($member_id);
         $data['visits']      = $this->Visit_model->get_by_member_id($member_id);
         $data['summary']     = $this->Visit_model->get_member_summary($member_id);
+
+        if (empty($data['member'])) {
+            show_404();
+        }
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
@@ -137,35 +211,29 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    // Handles modal submission
     public function add_visit()
     {
         $member_id = $this->input->post('member_id', TRUE);
         $visit_data = [
-            'member_id' => $member_id,
+            'member_id'  => $member_id,
             'visit_date' => $this->input->post('visit_date', TRUE),
-            'no_of_pax' => $this->input->post('no_of_pax', TRUE),
-            'apc'       => $this->input->post('apc', TRUE),
+            'no_of_pax'  => $this->input->post('no_of_pax', TRUE),
+            'apc'        => $this->input->post('apc', TRUE),
         ];
 
         // $this->load->model('Visit_model');
         // $this->Visit_model->insert($visit_data);
 
         $this->session->set_flashdata('success', 'Visit details added successfully!');
-
-        // Fix: Redirect to member_details instead of raw dump view
         redirect('main/member_details/' . $member_id);
     }
 
     public function profile($user_id = null)
     {
-        $data['title'] = 'User Profile Management';
+        $data['title']       = 'User Profile Management';
         $data['active_menu'] = 'profile';
+        $data['is_admin']    = TRUE;
 
-        // Check if current logged-in user is an Admin (used for showing/hiding admin action buttons)
-        $data['is_admin'] = TRUE;
-
-        // Fetch user data (fallback mock data if DB isn't plugged in yet)
         $data['user'] = [
             'name'       => 'Jane Doe',
             'email'      => 'jane.doe@example.com',

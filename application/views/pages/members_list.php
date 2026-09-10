@@ -14,7 +14,7 @@
     <!-- Quick Count Badge -->
     <div class="flex items-center gap-2 bg-darkCard border border-darkBorder px-4 py-2 rounded-xl text-xs text-slate-300 self-start sm:self-auto">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        Total Records: <strong class="text-white font-bold">142</strong>
+        Total Records: <strong class="text-white font-bold"><?= isset($total_count) ? $total_count : 0 ?></strong>
     </div>
 </div>
 
@@ -24,26 +24,26 @@
 
         <!-- Field Name / Search -->
         <div class="xl:col-span-3">
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Member Name</label>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Member Search</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
                     <i class="fa-solid fa-magnifying-glass text-xs"></i>
                 </div>
-                <input type="text" name="search" placeholder="Enter member name..."
-                    value="<?= $this->input->get('search') ?>"
+                <input type="text" name="search" placeholder="Name, Card No, Phone..."
+                    value="<?= htmlspecialchars($this->input->get('search') ?? '') ?>"
                     class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
             </div>
         </div>
 
-        <!-- Membership Type -->
+        <!-- Membership Type (Matches DB enum: Gold, Platinum, Silver) -->
         <div class="xl:col-span-2">
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Type</label>
             <div class="relative">
                 <select name="type" class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition appearance-none cursor-pointer">
-                    <option value="">Select Type</option>
-                    <option value="Full">Full</option>
-                    <option value="Associate">Associate</option>
-                    <option value="Student">Student</option>
+                    <option value="">All Types</option>
+                    <option value="Gold" <?= ($this->input->get('type') === 'Gold') ? 'selected' : '' ?>>Gold</option>
+                    <option value="Platinum" <?= ($this->input->get('type') === 'Platinum') ? 'selected' : '' ?>>Platinum</option>
+                    <option value="Silver" <?= ($this->input->get('type') === 'Silver') ? 'selected' : '' ?>>Silver</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-500">
                     <i class="fa-solid fa-chevron-down text-[10px]"></i>
@@ -56,8 +56,10 @@
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">DOB Range</label>
             <div class="grid grid-cols-2 gap-2">
                 <input type="date" name="dob_from" title="From DOB"
+                    value="<?= htmlspecialchars($this->input->get('dob_from') ?? '') ?>"
                     class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 transition cursor-pointer">
                 <input type="date" name="dob_to" title="To DOB"
+                    value="<?= htmlspecialchars($this->input->get('dob_to') ?? '') ?>"
                     class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 transition cursor-pointer">
             </div>
         </div>
@@ -67,18 +69,25 @@
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Anniversary Range</label>
             <div class="grid grid-cols-2 gap-2">
                 <input type="date" name="anniv_from" title="From Anniversary"
+                    value="<?= htmlspecialchars($this->input->get('anniv_from') ?? '') ?>"
                     class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 transition cursor-pointer">
                 <input type="date" name="anniv_to" title="To Anniversary"
+                    value="<?= htmlspecialchars($this->input->get('anniv_to') ?? '') ?>"
                     class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 transition cursor-pointer">
             </div>
         </div>
 
-        <!-- Apply Filter Button -->
-        <div class="xl:col-span-1">
-            <button type="submit" class="w-full bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white font-semibold text-xs py-2 px-3 rounded-xl border border-darkBorder hover:border-blue-500 transition flex items-center justify-center gap-1 shadow-md">
+        <!-- Action Buttons (Filter & Clear) -->
+        <div class="xl:col-span-1 flex items-center gap-1.5">
+            <button type="submit" title="Apply Filter" class="flex-1 bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white font-semibold text-xs py-2 px-2.5 rounded-xl border border-darkBorder hover:border-blue-500 transition flex items-center justify-center gap-1 shadow-md">
                 <i class="fa-solid fa-filter text-[10px]"></i>
                 <span>Filter</span>
             </button>
+            <?php if (!empty(array_filter($this->input->get() ?? []))): ?>
+                <a href="<?= base_url('main/members_list') ?>" title="Reset Filters" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 p-2 rounded-xl transition text-xs flex items-center justify-center">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </a>
+            <?php endif; ?>
         </div>
 
     </form>
@@ -92,6 +101,7 @@
             <thead class="text-[11px] uppercase tracking-wider text-slate-400 bg-[#0A1020] border-b border-darkBorder font-bold">
                 <tr>
                     <th scope="col" class="py-3.5 px-5 w-16 text-center">Sr.No</th>
+                    <th scope="col" class="py-3.5 px-6">Card No</th>
                     <th scope="col" class="py-3.5 px-6">Name</th>
                     <th scope="col" class="py-3.5 px-6">Type</th>
                     <th scope="col" class="py-3.5 px-6">DOB</th>
@@ -100,85 +110,123 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-darkBorder font-normal">
-                <?php
-                // Default fallback mock members matching wireframe
-                $members_list = isset($members) && !empty($members) ? $members : [
-                    ['id' => 1, 'name' => 'Annor Name',     'type' => 'Full',      'dob' => '15-Mar-1988', 'anniversary' => '20-Jun-2015'],
-                    ['id' => 2, 'name' => 'Julin Kuriran',   'type' => 'Associate', 'dob' => '15-Mar-1988', 'anniversary' => '20-Jun-2015'],
-                    ['id' => 3, 'name' => 'Martiss Studio',  'type' => 'Associate', 'dob' => '15-Mar-1988', 'anniversary' => '20-Jun-2015'],
-                    ['id' => 4, 'name' => 'Eiday Stenren',   'type' => 'Full',      'dob' => '15-Mar-1988', 'anniversary' => '20-Jun-2015'],
-                    ['id' => 5, 'name' => 'Anvin Brenk',     'type' => 'Full',      'dob' => '15-Mar-1988', 'anniversary' => '20-Jun-2015'],
-                    ['id' => 6, 'name' => 'Manam Denan',    'type' => 'Associate', 'dob' => '15-Mar-1988', 'anniversary' => '20-Jun-2015'],
-                    ['id' => 7, 'name' => 'Suph Eimma',     'type' => 'Student',   'dob' => '15-Mar-1988', 'anniversary' => '20-Jun-2015']
-                ];
-
-                foreach ($members_list as $index => $row):
-                ?>
-                    <tr class="hover:bg-slate-800/40 transition">
-                        <!-- Sr.No -->
-                        <td class="py-3.5 px-5 text-center font-mono text-xs text-slate-500">
-                            <?= $index + 1 ?>
-                        </td>
-
-                        <!-- Member Name -->
-                        <td class="py-3.5 px-6 font-semibold text-white">
-                            <?= htmlspecialchars($row['name']) ?>
-                        </td>
-
-                        <!-- Type Badge -->
-                        <td class="py-3.5 px-6">
-                            <?php if ($row['type'] === 'Full'): ?>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                                    Full
-                                </span>
-                            <?php elseif ($row['type'] === 'Associate'): ?>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                                    Associate
-                                </span>
-                            <?php else: ?>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-500/10 text-slate-300 border border-slate-500/20">
-                                    Student
-                                </span>
-                            <?php endif; ?>
-                        </td>
-
-                        <!-- DOB -->
-                        <td class="py-3.5 px-6 font-mono text-xs text-slate-300">
-                            <?= htmlspecialchars($row['dob']) ?>
-                        </td>
-
-                        <!-- Anniversary -->
-                        <td class="py-3.5 px-6 font-mono text-xs text-slate-300">
-                            <?= !empty($row['anniversary']) ? htmlspecialchars($row['anniversary']) : '<span class="text-slate-600">-</span>' ?>
-                        </td>
-
-                        <!-- Action: View Button (Linked to your Main controller view($id) method) -->
-                        <td class="py-3.5 px-6 text-center">
-                            <a href="<?= base_url('main/view/' . $row['id']) ?>"
-                                class="inline-flex items-center gap-1.5 bg-[#0A1020] hover:bg-blue-600 text-slate-300 hover:text-white border border-darkBorder hover:border-blue-500 text-xs font-medium px-3 py-1.5 rounded-lg transition shadow-sm">
-                                <i class="fa-regular fa-eye text-[11px]"></i>
-                                <span>View</span>
-                            </a>
+                <?php if (empty($members)): ?>
+                    <tr>
+                        <td colspan="7" class="py-12 text-center text-slate-500">
+                            <i class="fa-solid fa-users-slash text-3xl mb-2 block"></i>
+                            No members found matching your search and filter criteria.
                         </td>
                     </tr>
-                <?php endforeach; ?>
+                <?php else: ?>
+                    <?php
+                    $sr_offset = isset($current_page) && isset($per_page) ? ($current_page - 1) * $per_page : 0;
+                    foreach ($members as $index => $row):
+                        $full_name = trim($row['first_name'] . ' ' . $row['last_name']);
+                        $dob_formatted = (!empty($row['dob']) && $row['dob'] !== '0000-00-00') ? date('d-M-Y', strtotime($row['dob'])) : '-';
+                        $anni_formatted = (!empty($row['anniversary']) && $row['anniversary'] !== '0000-00-00') ? date('d-M-Y', strtotime($row['anniversary'])) : '-';
+                    ?>
+                        <tr class="hover:bg-slate-800/40 transition">
+                            <!-- Sr.No -->
+                            <td class="py-3.5 px-5 text-center font-mono text-xs text-slate-500">
+                                <?= $sr_offset + $index + 1 ?>
+                            </td>
+
+                            <!-- Card Number -->
+                            <td class="py-3.5 px-6 font-mono text-xs text-blue-400 font-semibold">
+                                <?= htmlspecialchars($row['card_number']) ?>
+                            </td>
+
+                            <!-- Member Name & Contact -->
+                            <td class="py-3.5 px-6 font-semibold text-white">
+                                <div><?= htmlspecialchars($full_name) ?></div>
+                                <?php if (!empty($row['contact_no'])): ?>
+                                    <span class="text-[11px] font-normal text-slate-400 font-mono"><?= htmlspecialchars($row['contact_no']) ?></span>
+                                <?php endif; ?>
+                            </td>
+
+                            <!-- Type Badge -->
+                            <td class="py-3.5 px-6">
+                                <?php if (strtolower($row['card_type']) === 'gold'): ?>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                                        <i class="fa-solid fa-crown text-[10px] mr-1"></i> Gold
+                                    </span>
+                                <?php elseif (strtolower($row['card_type']) === 'platinum'): ?>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-400/10 text-slate-300 border border-slate-400/30">
+                                        <i class="fa-solid fa-gem text-[10px] mr-1"></i> Platinum
+                                    </span>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-500/10 text-slate-300 border border-slate-500/20">
+                                        <?= htmlspecialchars($row['card_type']) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </td>
+
+                            <!-- DOB -->
+                            <td class="py-3.5 px-6 font-mono text-xs text-slate-300">
+                                <?= $dob_formatted ?>
+                            </td>
+
+                            <!-- Anniversary -->
+                            <td class="py-3.5 px-6 font-mono text-xs text-slate-300">
+                                <?= $anni_formatted ?>
+                            </td>
+
+                            <!-- Action: View Button (Navigates to individual member_details) -->
+                            <td class="py-3.5 px-6 text-center">
+                                <a href="<?= base_url('main/member_details/' . $row['id']) ?>"
+                                    class="inline-flex items-center gap-1.5 bg-[#0A1020] hover:bg-blue-600 text-slate-300 hover:text-white border border-darkBorder hover:border-blue-500 text-xs font-medium px-3 py-1.5 rounded-lg transition shadow-sm">
+                                    <i class="fa-regular fa-eye text-[11px]"></i>
+                                    <span>View</span>
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
 
     <!-- Pagination Bar -->
-    <div class="px-6 py-4 border-t border-darkBorder bg-[#0A1020] flex items-center justify-end">
-        <nav class="flex items-center gap-1 text-xs font-medium">
-            <span class="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold">1</span>
-            <a href="#" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">2</a>
-            <a href="#" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">3</a>
-            <span class="px-2 py-1.5 text-slate-600">...</span>
-            <a href="#" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">10</a>
-            <a href="#" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">Next &rarr;</a>
-        </nav>
-    </div>
+    <?php if (isset($total_pages) && $total_pages > 1): ?>
+        <?php
+        $queryParams = $_GET;
+        unset($queryParams['page']);
+        $baseQuery = http_build_query($queryParams);
+        $queryPrefix = !empty($baseQuery) ? '?' . $baseQuery . '&page=' : '?page=';
+        ?>
+        <div class="px-6 py-4 border-t border-darkBorder bg-[#0A1020] flex items-center justify-between">
+            <span class="text-xs text-slate-500">
+                Showing page <strong class="text-slate-300"><?= $current_page ?></strong> of <strong class="text-slate-300"><?= $total_pages ?></strong>
+            </span>
 
-    <!-- SECTION 3: Bottom Actions Bar (Add, Edit, Remove, Export) -->
+            <nav class="flex items-center gap-1 text-xs font-medium">
+                <?php if ($current_page > 1): ?>
+                    <a href="<?= base_url('main/members_list' . $queryPrefix . ($current_page - 1)) ?>"
+                        class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">&larr; Prev</a>
+                <?php endif; ?>
+
+                <?php
+                $start = max(1, $current_page - 2);
+                $end = min($total_pages, $current_page + 2);
+                for ($p = $start; $p <= $end; $p++):
+                ?>
+                    <?php if ($p == $current_page): ?>
+                        <span class="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold"><?= $p ?></span>
+                    <?php else: ?>
+                        <a href="<?= base_url('main/members_list' . $queryPrefix . $p) ?>"
+                            class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"><?= $p ?></a>
+                    <?php endif; ?>
+                <?php endfor; ?>
+
+                <?php if ($current_page < $total_pages): ?>
+                    <a href="<?= base_url('main/members_list' . $queryPrefix . ($current_page + 1)) ?>"
+                        class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">Next &rarr;</a>
+                <?php endif; ?>
+            </nav>
+        </div>
+    <?php endif; ?>
+
+    <!-- SECTION 3: Bottom Actions Bar (Add, Edit Disabled, Remove Disabled, Export CSV) -->
     <div class="p-5 border-t border-darkBorder bg-darkCard flex flex-wrap items-center justify-between gap-4">
 
         <!-- Left: Management Action Buttons -->
@@ -188,26 +236,31 @@
                 <i class="fa-solid fa-plus text-xs"></i> Add
             </a>
 
-            <!-- Edit Selected -->
-            <button type="button" onclick="alert('Select a member row to edit')"
-                class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2">
+            <!-- Edit Selected (Disabled) -->
+            <button type="button" disabled
+                title="Edit action currently disabled"
+                class="bg-slate-800/40 text-slate-500 font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2 cursor-not-allowed opacity-50 select-none">
                 <i class="fa-regular fa-pen-to-square text-xs"></i> Edit
             </button>
 
-            <!-- Remove Selected -->
-            <button type="button" onclick="if(confirm('Are you sure you want to remove the selected member?')) alert('Member removed');"
-                class="bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl border border-red-500/30 transition flex items-center gap-2">
+            <!-- Remove Selected (Disabled) -->
+            <button type="button" disabled
+                title="Remove action currently disabled"
+                class="bg-red-500/5 text-red-400/40 font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl border border-red-500/10 transition flex items-center gap-2 cursor-not-allowed opacity-50 select-none">
                 <i class="fa-regular fa-trash-can text-xs"></i> Remove
             </button>
         </div>
 
-        <!-- Right: Export Button -->
+        <!-- Right: Export CSV Button -->
         <div>
-            <button type="button" onclick="window.print()"
+            <?php
+            $exportQuery = !empty($_GET) ? '?' . http_build_query($_GET) : '';
+            ?>
+            <a href="<?= base_url('main/export_members_csv' . $exportQuery) ?>"
                 class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs tracking-wider uppercase px-6 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-md">
-                <i class="fa-solid fa-file-arrow-down text-sm"></i>
-                <span>Export</span>
-            </button>
+                <i class="fa-solid fa-file-arrow-down text-sm text-emerald-400"></i>
+                <span>Export CSV</span>
+            </a>
         </div>
 
     </div>
