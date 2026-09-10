@@ -98,11 +98,11 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => '134.209.150.193',
+	'hostname' => 'localhost',
 	'username' => 'kyztwgykqd',
 	'password' => 'N7hfeujfVv',
 	'database' => 'kyztwgykqd',
-	'dbdriver' => 'mysqli',
+	'dbdriver' => 'mysql',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
 	'db_debug' => (ENVIRONMENT !== 'production'),
