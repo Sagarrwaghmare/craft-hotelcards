@@ -1,0 +1,30 @@
+
+
+overall
+
+
+login as either admin, viewer, editor.
+
+
+you would see the cards and overview members table, sorted by lets say the upcomin birthday or anniversary.
+
+dasboard page:
+cards by filtering... 
+upon click connect direct to web whatsapp..
+
+
+members:
+display members: similar to dasbord page but with more filters. can go to seperate members
+member page: display member details... some fields are editable ofc., we can add visit details here.
+    visit details is modal not seperate page
+add member: self explain. 
+
+
+
+
+user: 
+login: 3 types, admin viewer editor. only admin can add another viewer. 
+add user: only admin could do that. 
+user management: only admin could do that. 
+user profile: visible to all. 
+reset password: visilbe to all.

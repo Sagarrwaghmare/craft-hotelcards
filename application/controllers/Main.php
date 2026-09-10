@@ -30,7 +30,9 @@ class Main extends CI_Controller
 
     public function index($page_view = null, $data = [])
     {
-        echo "MAIN PAGE";
+        // echo "MAIN PAGE";
+
+        
     }
 
     public function add_user()
