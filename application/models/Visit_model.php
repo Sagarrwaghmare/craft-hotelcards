@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 class Visit_model extends CI_Model
 {
@@ -24,16 +24,17 @@ class Visit_model extends CI_Model
         return $query->row_array();
     }
 
-    // Get all visits for a specific member (Used in "View Member Details" screen)
+    // Get all visits for a specific member
     public function get_by_member_id($member_id)
     {
         $this->db->where('member_id', $member_id);
         $this->db->order_by('visit_date', 'DESC');
+        $this->db->order_by('id', 'DESC');
         $query = $this->db->get($this->table);
         return $query->result_array();
     }
 
-    // Get visits with Member & Staff details joined (For visit logs / reports)
+    // Get visits with Member & Staff details joined
     public function get_visits_detailed($limit = null, $offset = null)
     {
         $this->db->select('v.*, m.first_name, m.last_name, m.card_number, m.card_type, u.name as logged_by');

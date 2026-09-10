@@ -80,7 +80,6 @@ class Main extends CI_Controller
         $data['title']       = 'Members Directory';
         $data['active_menu'] = 'members_list';
 
-        // Extract and clean filters
         $filters = [
             'search'     => trim((string)$this->input->get('search', TRUE)),
             'type'       => trim((string)$this->input->get('type', TRUE)),
@@ -90,13 +89,11 @@ class Main extends CI_Controller
             'anniv_to'   => trim((string)$this->input->get('anniv_to', TRUE)),
         ];
 
-        // Total filtered count
-        $total_rows = $this->Member_model->count_filtered_members($filters);
-        $per_page   = 15;
+        $total_rows   = $this->Member_model->count_filtered_members($filters);
+        $per_page     = 15;
         $current_page = max(1, (int)$this->input->get('page'));
-        $offset     = ($current_page - 1) * $per_page;
+        $offset       = ($current_page - 1) * $per_page;
 
-        // Fetch paginated member rows
         $data['members']      = $this->Member_model->get_filtered_members($filters, $per_page, $offset);
         $data['total_count']  = $total_rows;
         $data['current_page'] = $current_page;
@@ -111,7 +108,6 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    // Export members matching current active filters to CSV
     public function export_members_csv()
     {
         $this->load->model('Member_model');
@@ -134,7 +130,6 @@ class Main extends CI_Controller
 
         $output = fopen('php://output', 'w');
 
-        // CSV Column Headers
         fputcsv($output, [
             'Sr.No',
             'Card Number',
@@ -188,21 +183,25 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    public function member_details($member_id = 1)
+    public function member_details($member_id = null)
     {
+        if (empty($member_id)) {
+            redirect('main/members_list');
+        }
+
         $this->load->model('Member_model');
         $this->load->model('Visit_model');
 
         $data['title']       = 'Member Details';
-        $data['active_menu'] = 'members';
+        $data['active_menu'] = 'members_list';
 
         $data['member']      = $this->Member_model->get_by_id($member_id);
-        $data['visits']      = $this->Visit_model->get_by_member_id($member_id);
-        $data['summary']     = $this->Visit_model->get_member_summary($member_id);
-
         if (empty($data['member'])) {
             show_404();
         }
+
+        $data['visits']      = $this->Visit_model->get_by_member_id($member_id);
+        $data['summary']     = $this->Visit_model->get_member_summary($member_id);
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
@@ -211,20 +210,43 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
+    // Handles modal submission for adding a visit
     public function add_visit()
     {
-        $member_id = $this->input->post('member_id', TRUE);
+        $member_id  = (int)$this->input->post('member_id', TRUE);
+        $visit_date = $this->input->post('visit_date', TRUE);
+        $raw_pax    = (int)($this->input->post('no_of_pax', TRUE) ?: $this->input->post('pax', TRUE));
+        $raw_apc    = (float)$this->input->post('apc', TRUE);
+
+        if (empty($member_id) || empty($visit_date)) {
+            $this->session->set_flashdata('error', 'Visit date and member are required.');
+            redirect('main/members_list');
+        }
+
+        // Limit pax between 1 and 25
+        $pax = max(1, min(25, $raw_pax));
+        $apc = max(0.00, $raw_apc);
+
+        $this->load->model('Visit_model');
+
+        $logged_user_id = $this->session->userdata('user_id') ?? null;
+
         $visit_data = [
             'member_id'  => $member_id,
-            'visit_date' => $this->input->post('visit_date', TRUE),
-            'no_of_pax'  => $this->input->post('no_of_pax', TRUE),
-            'apc'        => $this->input->post('apc', TRUE),
+            'visit_date' => $visit_date,
+            'no_of_pax'  => $pax,
+            'apc'        => number_format($apc, 2, '.', ''),
+            'created_by' => $logged_user_id,
         ];
 
-        // $this->load->model('Visit_model');
-        // $this->Visit_model->insert($visit_data);
+        $inserted = $this->Visit_model->add($visit_data);
 
-        $this->session->set_flashdata('success', 'Visit details added successfully!');
+        if ($inserted) {
+            $this->session->set_flashdata('success', 'Visit details added successfully!');
+        } else {
+            $this->session->set_flashdata('error', 'Failed to save visit details. Please try again.');
+        }
+
         redirect('main/member_details/' . $member_id);
     }
 
