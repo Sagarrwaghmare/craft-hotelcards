@@ -43,16 +43,77 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    public function add_member()
+    // 1. Show Add Member Page
+    public function add_member($id = null)
     {
-        $data['title']       = 'Add Member';
+        $this->load->model('Member_model');
+
+        $data['title']       = $id ? 'Edit Member' : 'Add Member';
         $data['active_menu'] = 'add_member';
+        $data['member']      = $id ? $this->Member_model->get_by_id($id) : null;
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
         $this->load->view('templates/navbar', $data);
         $this->load->view('pages/add_member', $data);
         $this->load->view('templates/footer', $data);
+    }
+
+    // 2. Save (Insert / Update) Member to DB
+    public function save_member($id = null)
+    {
+        $this->load->model('Member_model');
+
+        $card_type   = $this->input->post('card_type', TRUE);
+        $card_prefix = $this->input->post('card_prefix', TRUE);
+        $card_year   = $this->input->post('card_year', TRUE) ?: date('Y');
+        $card_suffix = trim((string)$this->input->post('card_suffix', TRUE));
+
+        // Assemble full card number: e.g. 666-2026-1042
+        $full_card_number = "{$card_prefix}-{$card_year}-{$card_suffix}";
+
+        // Validate Card Uniqueness
+        $existing = $this->Member_model->get_by_card_number($full_card_number);
+        if ($existing && (!$id || $existing['id'] != $id)) {
+            $this->session->set_flashdata('error', "Card Number '{$full_card_number}' is already registered to another member.");
+            redirect('main/add_member' . ($id ? '/' . $id : ''));
+            return;
+        }
+
+        $dob         = $this->input->post('dob', TRUE);
+        $marital     = $this->input->post('marital_status', TRUE);
+        $anniversary = ($marital === 'Married') ? $this->input->post('anniversary', TRUE) : null;
+
+        $member_data = [
+            'card_number'    => $full_card_number,
+            'card_type'      => $card_type,
+            'first_name'     => trim((string)$this->input->post('first_name', TRUE)),
+            'last_name'      => trim((string)$this->input->post('last_name', TRUE)),
+            'company_name'   => trim((string)$this->input->post('company_name', TRUE)) ?: null,
+            'designation'    => trim((string)$this->input->post('designation', TRUE)) ?: null,
+            'contact_no'     => trim((string)$this->input->post('contact_no', TRUE)) ?: null,
+            'email'          => trim((string)$this->input->post('email', TRUE)) ?: null,
+            'address'        => trim((string)$this->input->post('address', TRUE)) ?: null,
+            'dob'            => !empty($dob) ? $dob : null,
+            'marital_status' => !empty($marital) ? $marital : 'Single',
+            'anniversary'    => !empty($anniversary) ? $anniversary : null,
+            'notes'          => trim((string)$this->input->post('notes', TRUE)) ?: null,
+        ];
+
+        if ($id) {
+            $this->Member_model->update($id, $member_data);
+            $this->session->set_flashdata('success', 'Member details updated successfully!');
+            redirect('main/member_details/' . $id);
+        } else {
+            $new_id = $this->Member_model->add($member_data);
+            if ($new_id) {
+                $this->session->set_flashdata('success', 'New member registered successfully!');
+                redirect('main/member_details/' . $new_id);
+            } else {
+                $this->session->set_flashdata('error', 'Failed to register member. Please check input values.');
+                redirect('main/add_member');
+            }
+        }
     }
 
     public function members()
@@ -210,7 +271,6 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    // Handles modal submission for adding a visit
     public function add_visit()
     {
         $member_id  = (int)$this->input->post('member_id', TRUE);
@@ -223,7 +283,6 @@ class Main extends CI_Controller
             redirect('main/members_list');
         }
 
-        // Limit pax between 1 and 25
         $pax = max(1, min(25, $raw_pax));
         $apc = max(0.00, $raw_apc);
 

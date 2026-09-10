@@ -135,7 +135,6 @@ class Member_model extends CI_Model
         }
     }
 
-    // Get filtered members with optional pagination
     public function get_filtered_members($filters = [], $limit = null, $offset = null)
     {
         $this->_apply_filters($filters);
@@ -149,7 +148,6 @@ class Member_model extends CI_Model
         return $query->result_array();
     }
 
-    // Count total rows matching filters
     public function count_filtered_members($filters = [])
     {
         $this->_apply_filters($filters);
