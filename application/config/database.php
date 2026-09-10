@@ -73,23 +73,35 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $active_group = 'default';
 $query_builder = TRUE;
 
-// 
-// Database name:hnvvjwrrdp
-// DB Username: hnvvjwrrdp
-// DB Password: 8uszwHmyJH
 
-
-// 'hostname' => '134.209.150.193',
-// 'username' => 'hnvvjwrrdp',
-// 'password' => '8uszwHmyJH',
-// 'database' => 'hnvvjwrrdp',
+// $db['default'] = array(
+// 	'dsn'	=> '',
+// 	'hostname' => 'localhost',
+// 	'username' => 'root',
+// 	'password' => '',
+// 	'database' => 'hotelcards',
+// 	'dbdriver' => 'mysqli',
+// 	'dbprefix' => '',
+// 	'pconnect' => FALSE,
+// 	'db_debug' => (ENVIRONMENT !== 'production'),
+// 	'cache_on' => FALSE,
+// 	'cachedir' => '',
+// 	'char_set' => 'utf8',
+// 	'dbcollat' => 'utf8_general_ci',
+// 	'swap_pre' => '',
+// 	'encrypt' => FALSE,
+// 	'compress' => FALSE,
+// 	'stricton' => FALSE,
+// 	'failover' => array(),
+// 	'save_queries' => TRUE
+// );
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => '',
-	'database' => 'hotelcards',
+	'hostname' => '134.209.150.193',
+	'username' => 'kyztwgykqd',
+	'password' => 'N7hfeujfVv',
+	'database' => 'kyztwgykqd',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,

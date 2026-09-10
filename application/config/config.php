@@ -25,8 +25,8 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 | a PHP script and you can easily do that on your own.
 |
 */
-// $config['base_url'] = 'https://smiles4birthdays.cftiindia.com/';
-$config['base_url'] = 'http://localhost/craft/hotelcards/';
+$config['base_url'] = 'https://hotelheritage.mediaworks.net.in/';
+// $config['base_url'] = 'http://localhost/craft/hotelcards/';
 
 /*
 |--------------------------------------------------------------------------
