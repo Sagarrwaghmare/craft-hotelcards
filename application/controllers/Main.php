@@ -44,7 +44,6 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    // 1. Show Add Member Page
     public function add_member($id = null)
     {
         $this->load->model('Member_model');
@@ -60,7 +59,6 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    // 2. Save (Insert / Update) Member to DB
     public function save_member($id = null)
     {
         $this->load->model('Member_model');
@@ -70,10 +68,8 @@ class Main extends CI_Controller
         $card_year   = $this->input->post('card_year', TRUE) ?: date('Y');
         $card_suffix = trim((string)$this->input->post('card_suffix', TRUE));
 
-        // Assemble full card number: e.g. 666-2026-1042
         $full_card_number = "{$card_prefix}-{$card_year}-{$card_suffix}";
 
-        // Validate Card Uniqueness
         $existing = $this->Member_model->get_by_card_number($full_card_number);
         if ($existing && (!$id || $existing['id'] != $id)) {
             $this->session->set_flashdata('error', "Card Number '{$full_card_number}' is already registered to another member.");
@@ -235,14 +231,87 @@ class Main extends CI_Controller
 
     public function users()
     {
+        $this->load->model('User_model');
+
         $data['title']       = 'User Management';
         $data['active_menu'] = 'users';
+        $data['users']       = $this->User_model->get_all();
+        $data['total_count'] = $this->User_model->count_all();
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
         $this->load->view('templates/navbar', $data);
         $this->load->view('pages/users_list', $data);
         $this->load->view('templates/footer', $data);
+    }
+
+    // Handles modal edit submission from users_list.php
+    public function update_user()
+    {
+        $this->load->model('User_model');
+
+        $user_id = (int)$this->input->post('user_id', TRUE);
+        if (empty($user_id)) {
+            $this->session->set_flashdata('error', 'Invalid user ID.');
+            redirect('main/users');
+        }
+
+        $email    = trim((string)$this->input->post('email', TRUE));
+        $username = trim((string)$this->input->post('username', TRUE));
+
+        // Check if email or username is already taken by another user
+        $existingEmail = $this->User_model->get_by_email($email);
+        if ($existingEmail && $existingEmail['id'] != $user_id) {
+            $this->session->set_flashdata('error', "Email '{$email}' is already in use by another user.");
+            redirect('main/users');
+        }
+
+        $existingUsername = $this->User_model->get_by_username($username);
+        if ($existingUsername && $existingUsername['id'] != $user_id) {
+            $this->session->set_flashdata('error', "Username '{$username}' is already taken.");
+            redirect('main/users');
+        }
+
+        $update_data = [
+            'name'       => trim((string)$this->input->post('name', TRUE)),
+            'email'      => $email,
+            'username'   => $username,
+            'contact_no' => trim((string)$this->input->post('contact_no', TRUE)) ?: null,
+            'access'     => $this->input->post('access', TRUE),
+        ];
+
+        // Only update password if a new one is typed
+        $password = $this->input->post('password', TRUE);
+        if (!empty($password)) {
+            $update_data['password_hash'] = password_hash($password, PASSWORD_BCRYPT);
+        }
+
+        $this->User_model->update($user_id, $update_data);
+        $this->session->set_flashdata('success', "User '{$update_data['name']}' updated successfully!");
+
+        redirect('main/users');
+    }
+
+    public function delete_users()
+    {
+        $this->load->model('User_model');
+
+        $selected_ids = $this->input->post('selected_users');
+
+        if (!empty($selected_ids) && is_array($selected_ids)) {
+            $sanitized_ids = array_map('intval', $selected_ids);
+            $deleted = $this->User_model->delete_batch_ids($sanitized_ids);
+
+            if ($deleted) {
+                $this->session->set_flashdata('success', count($sanitized_ids) . ' user(s) removed successfully.');
+            } else {
+                $this->session->set_flashdata('error', 'Failed to delete selected users.');
+            }
+        } else {
+            $this->session->set_flashdata('error', 'No users were selected for deletion.');
+        }
+
+        redirect('main/users');
     }
 
     public function member_details($member_id = null)
@@ -310,20 +379,38 @@ class Main extends CI_Controller
         redirect('main/member_details/' . $member_id);
     }
 
-    public function profile($user_id = null)
+    // Profile is now strictly for the currently logged-in user
+    public function profile()
     {
-        $data['title']       = 'User Profile Management';
+        $this->load->model('User_model');
+
+        $data['title']       = 'My Profile';
         $data['active_menu'] = 'profile';
         $data['is_admin']    = TRUE;
 
-        $data['user'] = [
-            'name'       => 'Jane Doe',
-            'email'      => 'jane.doe@example.com',
-            'contact_no' => '555-0199',
-            'username'   => 'janedoe_sys',
-            'password'   => 'password123',
+        // Fetch the currently logged-in user (or fall back to first user in DB if no session yet)
+        $current_id = $this->session->userdata('user_id');
+        $db_user    = $current_id ? $this->User_model->get_by_id($current_id) : null;
+
+        if (!$db_user) {
+            // Fallback to first registered user
+            $all = $this->User_model->get_all();
+            $db_user = !empty($all) ? $all[0] : null;
+        }
+
+        $data['user'] = $db_user ?: [
+            'id'         => 1,
+            'name'       => 'Administrator',
+            'email'      => 'admin@hotelcards.local',
+            'contact_no' => '555-0100',
+            'username'   => 'admin',
             'access'     => 'Admin'
         ];
+
+        // Safe placeholder to permanently resolve undefined array key "password" on line 105
+        if (!isset($data['user']['password'])) {
+            $data['user']['password'] = '••••••••••••';
+        }
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);

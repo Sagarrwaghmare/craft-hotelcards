@@ -28,3 +28,32 @@ add user: only admin could do that.
 user management: only admin could do that. 
 user profile: visible to all. 
 reset password: visilbe to all.
+
+
+
+do to: 
+make em work: user management, add user, user profile, reset password, login 
+
+
+lets see:
+ users module remianing, 
+    we can do the whole thing first then we 'hide' it 
+    todo: user management, add user, user profile, reset password, login 
+    role: 
+        admin: has user manage and user, add edit delete user , members, visits 
+        viewer: no data add member, visits, user 
+        editor: add edit member visits, 
+
+
+
+ bunch of tasks
+    white and dark mode 
+    pagination of 10 in member, user and visits 
+    font size increase 
+    
+    type->sub type col name in dashboard column 
+    member page remove type silver 
+    member page filter date should be month and date only 
+    enable edit and delte in members 
+    show NA instead of blank in anniversary 
+    edit member page option 

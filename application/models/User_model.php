@@ -11,7 +11,7 @@ class User_model extends CI_Model
         parent::__construct();
     }
 
-    // Get all users
+    // Get all users ordered by newest first
     public function get_all()
     {
         $query = $this->db->order_by('id', 'DESC')->get($this->table);
@@ -22,7 +22,7 @@ class User_model extends CI_Model
     public function get_by_id($id)
     {
         $query = $this->db->get_where($this->table, array('id' => $id));
-        return $query->row_array(); // row_array returns a single associative record
+        return $query->row_array();
     }
 
     // Get user by Username (useful for login / unique checks)
@@ -39,7 +39,7 @@ class User_model extends CI_Model
         return $query->row_array();
     }
 
-    // Insert new user (Returns newly generated ID)
+    // Insert new user
     public function add($data)
     {
         $this->db->insert($this->table, $data);
@@ -53,10 +53,20 @@ class User_model extends CI_Model
         return $this->db->update($this->table, $data);
     }
 
-    // Delete user
+    // Delete single user
     public function delete($id)
     {
         $this->db->where('id', $id);
+        return $this->db->delete($this->table);
+    }
+
+    // Delete multiple users at once
+    public function delete_batch_ids($ids)
+    {
+        if (empty($ids) || !is_array($ids)) {
+            return false;
+        }
+        $this->db->where_in('id', $ids);
         return $this->db->delete($this->table);
     }
 
