@@ -10,17 +10,25 @@
             <p class="text-xs text-slate-400">Fill in the information below to create a new user account.</p>
         </div>
     </div>
-    <a href="<?= base_url() ?>" class="text-xs text-slate-300 border border-darkBorder px-3.5 py-2 rounded-lg hover:bg-slate-800 transition flex items-center gap-2">
-        <i class="fa-solid fa-arrow-left text-[10px]"></i> Back
+    <a href="<?= base_url('main/users') ?>" class="text-xs text-slate-300 border border-darkBorder px-3.5 py-2 rounded-lg hover:bg-slate-800 transition flex items-center gap-2">
+        <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Users
     </a>
 </div>
+
+<!-- Flash Alerts -->
+<?php if ($this->session->flashdata('error')): ?>
+    <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-3">
+        <i class="fa-solid fa-circle-exclamation text-sm shrink-0"></i>
+        <span><?= $this->session->flashdata('error') ?></span>
+    </div>
+<?php endif; ?>
 
 <!-- Main Content Grid -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
     <!-- Left 2 Cols: The Add User Form -->
     <div class="lg:col-span-2 bg-darkCard border border-darkBorder rounded-2xl p-6 lg:p-8 shadow-xl">
-        <form action="<?= base_url('users/store') ?>" method="POST" id="addUserForm" class="space-y-6">
+        <form action="<?= base_url('main/save_user') ?>" method="POST" id="addUserForm" class="space-y-6">
 
             <!-- Row 1: Name & Username -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -33,7 +41,7 @@
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                             <i class="fa-regular fa-user text-sm"></i>
                         </div>
-                        <input type="text" name="name" required placeholder="Enter name"
+                        <input type="text" name="name" required placeholder="Enter full name"
                             class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                     </div>
                 </div>
@@ -48,7 +56,7 @@
                             <i class="fa-regular fa-id-badge text-sm"></i>
                         </div>
                         <input type="text" name="username" required placeholder="Enter unique username"
-                            class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                            class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition font-mono">
                     </div>
                 </div>
             </div>
@@ -64,8 +72,8 @@
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                             <i class="fa-solid fa-at text-sm"></i>
                         </div>
-                        <input type="email" name="email" required placeholder="Enter email address"
-                            class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                        <input type="email" name="email" required placeholder="name@example.com"
+                            class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition font-mono text-xs">
                     </div>
                 </div>
 
@@ -78,8 +86,8 @@
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                             <i class="fa-solid fa-phone text-xs"></i>
                         </div>
-                        <input type="text" name="contact_no" placeholder="Enter contact number"
-                            class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                        <input type="text" name="contact_no" placeholder="+1-555-0100"
+                            class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition font-mono text-xs">
                     </div>
                 </div>
             </div>
@@ -104,7 +112,7 @@
                     </div>
                 </div>
 
-                <!-- Access / Role Select -->
+                <!-- Access / Role Select (Matches DB enum: Admin, Editor, Viewer) -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
                         Access Level <span class="text-red-400">*</span>
@@ -116,9 +124,9 @@
                         <select name="access" required
                             class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition appearance-none cursor-pointer">
                             <option value="" disabled selected>Select Role</option>
-                            <option value="admin">Admin</option>
-                            <option value="editor">Editor</option>
-                            <option value="viewer">Viewer</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Editor">Editor</option>
+                            <option value="Viewer">Viewer</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
                             <i class="fa-solid fa-chevron-down text-xs"></i>
@@ -130,9 +138,9 @@
             <!-- Action Buttons -->
             <div class="pt-6 border-t border-darkBorder/60 flex items-center gap-3">
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-6 py-3 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2">
-                    <i class="fa-solid fa-plus text-xs"></i> Add User
+                    <i class="fa-solid fa-plus text-xs"></i> Save User
                 </button>
-                <a href="<?= base_url() ?>" class="bg-transparent hover:bg-slate-800/80 text-slate-300 font-semibold text-xs tracking-wider uppercase px-6 py-3 rounded-xl border border-darkBorder transition">
+                <a href="<?= base_url('main/users') ?>" class="bg-transparent hover:bg-slate-800/80 text-slate-300 font-semibold text-xs tracking-wider uppercase px-6 py-3 rounded-xl border border-darkBorder transition">
                     Cancel
                 </a>
             </div>

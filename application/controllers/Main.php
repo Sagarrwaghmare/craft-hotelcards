@@ -32,6 +32,7 @@ class Main extends CI_Controller
         $this->members();
     }
 
+    // Show Add User Page
     public function add_user()
     {
         $data['title']       = 'Add User';
@@ -40,8 +41,74 @@ class Main extends CI_Controller
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
         $this->load->view('templates/navbar', $data);
-        $this->load->view('templates/add', $data);
+
+        // Supports both pages/add.php and templates/add.php
+        if (file_exists(APPPATH . 'views/pages/add.php')) {
+            $this->load->view('pages/add', $data);
+        } else {
+            $this->load->view('templates/add', $data);
+        }
+
         $this->load->view('templates/footer', $data);
+    }
+
+    // Save New User into Database
+    public function save_user()
+    {
+        $this->load->model('User_model');
+
+        $name       = trim((string)$this->input->post('name', TRUE));
+        $username   = trim((string)$this->input->post('username', TRUE));
+        $email      = trim((string)$this->input->post('email', TRUE));
+        $contact_no = trim((string)$this->input->post('contact_no', TRUE));
+        $password   = $this->input->post('password', TRUE);
+        $access     = ucfirst(strtolower(trim((string)$this->input->post('access', TRUE))));
+
+        // Basic Validation
+        if (empty($name) || empty($username) || empty($email) || empty($password) || empty($access)) {
+            $this->session->set_flashdata('error', 'Please fill in all mandatory fields.');
+            redirect('main/add_user');
+            return;
+        }
+
+        // Validate Access Role matches DB Enum: 'Admin', 'Editor', 'Viewer'
+        if (!in_array($access, ['Admin', 'Editor', 'Viewer'])) {
+            $access = 'Viewer';
+        }
+
+        // Check if username already exists
+        if ($this->User_model->get_by_username($username)) {
+            $this->session->set_flashdata('error', "Username '{$username}' is already taken. Please pick another.");
+            redirect('main/add_user');
+            return;
+        }
+
+        // Check if email already exists
+        if ($this->User_model->get_by_email($email)) {
+            $this->session->set_flashdata('error', "Email '{$email}' is already registered.");
+            redirect('main/add_user');
+            return;
+        }
+
+        // Prepare data with Bcrypt password hash
+        $user_data = [
+            'name'          => $name,
+            'username'      => $username,
+            'email'         => $email,
+            'contact_no'    => !empty($contact_no) ? $contact_no : null,
+            'password_hash' => password_hash($password, PASSWORD_BCRYPT),
+            'access'        => $access
+        ];
+
+        $new_user_id = $this->User_model->add($user_data);
+
+        if ($new_user_id) {
+            $this->session->set_flashdata('success', "User '{$name}' created successfully!");
+            redirect('main/users');
+        } else {
+            $this->session->set_flashdata('error', 'Database error: Failed to create user. Please try again.');
+            redirect('main/add_user');
+        }
     }
 
     public function add_member($id = null)
@@ -245,7 +312,6 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    // Handles modal edit submission from users_list.php
     public function update_user()
     {
         $this->load->model('User_model');
@@ -259,7 +325,6 @@ class Main extends CI_Controller
         $email    = trim((string)$this->input->post('email', TRUE));
         $username = trim((string)$this->input->post('username', TRUE));
 
-        // Check if email or username is already taken by another user
         $existingEmail = $this->User_model->get_by_email($email);
         if ($existingEmail && $existingEmail['id'] != $user_id) {
             $this->session->set_flashdata('error', "Email '{$email}' is already in use by another user.");
@@ -277,10 +342,9 @@ class Main extends CI_Controller
             'email'      => $email,
             'username'   => $username,
             'contact_no' => trim((string)$this->input->post('contact_no', TRUE)) ?: null,
-            'access'     => $this->input->post('access', TRUE),
+            'access'     => ucfirst(strtolower(trim((string)$this->input->post('access', TRUE)))),
         ];
 
-        // Only update password if a new one is typed
         $password = $this->input->post('password', TRUE);
         if (!empty($password)) {
             $update_data['password_hash'] = password_hash($password, PASSWORD_BCRYPT);
@@ -379,7 +443,6 @@ class Main extends CI_Controller
         redirect('main/member_details/' . $member_id);
     }
 
-    // Profile is now strictly for the currently logged-in user
     public function profile()
     {
         $this->load->model('User_model');
@@ -388,12 +451,10 @@ class Main extends CI_Controller
         $data['active_menu'] = 'profile';
         $data['is_admin']    = TRUE;
 
-        // Fetch the currently logged-in user (or fall back to first user in DB if no session yet)
         $current_id = $this->session->userdata('user_id');
         $db_user    = $current_id ? $this->User_model->get_by_id($current_id) : null;
 
         if (!$db_user) {
-            // Fallback to first registered user
             $all = $this->User_model->get_all();
             $db_user = !empty($all) ? $all[0] : null;
         }
@@ -407,7 +468,6 @@ class Main extends CI_Controller
             'access'     => 'Admin'
         ];
 
-        // Safe placeholder to permanently resolve undefined array key "password" on line 105
         if (!isset($data['user']['password'])) {
             $data['user']['password'] = '••••••••••••';
         }

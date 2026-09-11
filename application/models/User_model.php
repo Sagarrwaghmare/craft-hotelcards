@@ -25,21 +25,21 @@ class User_model extends CI_Model
         return $query->row_array();
     }
 
-    // Get user by Username (useful for login / unique checks)
+    // Get user by Username (useful for duplicate check / login)
     public function get_by_username($username)
     {
         $query = $this->db->get_where($this->table, array('username' => $username));
         return $query->row_array();
     }
 
-    // Get user by Email
+    // Get user by Email (useful for duplicate check)
     public function get_by_email($email)
     {
         $query = $this->db->get_where($this->table, array('email' => $email));
         return $query->row_array();
     }
 
-    // Insert new user
+    // Insert new user into database
     public function add($data)
     {
         $this->db->insert($this->table, $data);
