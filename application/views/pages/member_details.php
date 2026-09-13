@@ -1,5 +1,11 @@
-<!-- Header Title & Back Navigation -->
-<div class="flex items-center justify-between mb-6">
+<?php
+// Role and permission determinations
+$user_role = strtolower(trim((string)$this->session->userdata('access')));
+$can_edit  = in_array($user_role, ['admin', 'editor']);
+?>
+
+<!-- Header Title & Action Navigation -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
     <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-blue-600/15 border border-blue-500/20 text-blue-400 flex items-center justify-center shadow-inner">
             <i class="fa-regular fa-id-badge text-base"></i>
@@ -9,9 +15,22 @@
             <h2 class="text-2xl font-bold text-white tracking-tight">Member Details</h2>
         </div>
     </div>
-    <a href="<?= base_url('main/members_list') ?>" class="text-xs text-slate-300 border border-darkBorder px-3.5 py-2 rounded-lg hover:bg-slate-800 transition flex items-center gap-2">
-        <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Members
-    </a>
+
+    <!-- Action Buttons (Edit Member + Back Navigation) -->
+    <div class="flex items-center gap-2.5 self-start sm:self-auto">
+        <?php if ($can_edit): ?>
+            <!-- Edit Member Button (Admin & Editor only) -->
+            <a href="<?= base_url('main/add_member/' . $member['id']) ?>"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-4 py-2 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                <i class="fa-regular fa-pen-to-square text-xs"></i> Edit Member
+            </a>
+        <?php endif; ?>
+
+        <a href="<?= base_url('main/members_list') ?>"
+            class="text-xs text-slate-300 border border-darkBorder px-3.5 py-2 rounded-xl hover:bg-slate-800 transition flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Members
+        </a>
+    </div>
 </div>
 
 <!-- Flash Message (Success / Error) -->
@@ -36,21 +55,14 @@
             <h3 class="text-sm font-bold text-white uppercase tracking-wider">Member Information</h3>
         </div>
 
-        <!-- Card Type Badge -->
-        <?php
-        $cType = strtolower($member['card_type'] ?? 'gold');
-        if ($cType === 'gold'):
-        ?>
+        <!-- Card Type Badge (Gold / Platinum only) -->
+        <?php if (strtolower($member['card_type'] ?? 'gold') === 'gold'): ?>
             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
                 <i class="fa-solid fa-crown text-[10px] mr-1.5"></i> Gold Member
             </span>
-        <?php elseif ($cType === 'platinum'): ?>
+        <?php else: ?>
             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-400/15 text-slate-200 border border-slate-400/30">
                 <i class="fa-solid fa-gem text-[10px] mr-1.5 text-sky-400"></i> Platinum Member
-            </span>
-        <?php else: ?>
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-500/10 text-slate-300 border border-slate-500/20">
-                <i class="fa-solid fa-id-card text-[10px] mr-1.5"></i> <?= htmlspecialchars($member['card_type']) ?> Member
             </span>
         <?php endif; ?>
     </div>
@@ -130,7 +142,7 @@
         </div>
         <div class="flex items-center gap-4 text-xs">
             <span class="text-slate-400">Total PAX: <strong class="text-slate-200"><?= isset($summary['total_pax']) ? $summary['total_pax'] : 0 ?></strong></span>
-            <span class="text-slate-400">Total Visits: <strong class="text-white"><?= count($visits ?? []) ?></strong></span>
+            <span class="text-slate-400">Total Visits: <strong class="text-white"><?= isset($total_visits) ? $total_visits : count($visits ?? []) ?></strong></span>
         </div>
     </div>
 
@@ -164,7 +176,7 @@
                                 </span>
                             </td>
                             <td class="py-3.5 px-6 font-mono text-emerald-400">
-                                <?= htmlspecialchars($apc) ?>
+                                $<?= htmlspecialchars($apc) ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -180,118 +192,146 @@
         </table>
     </div>
 
-    <!-- Actions & Conditional Pagination Bar -->
+    <!-- Actions & Pagination Bar (10 Visits Per Page) -->
     <div class="p-5 bg-[#0A1020] border-t border-darkBorder flex flex-col sm:flex-row items-center justify-between gap-4">
-        <!-- Open Modal Button -->
-        <button type="button" id="openVisitModalBtn"
-            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-6 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2">
-            <i class="fa-solid fa-plus text-xs"></i> Add visit details
-        </button>
+        <!-- Open Modal Button (Admin & Editor only) -->
+        <?php if ($can_edit): ?>
+            <button type="button" id="openVisitModalBtn"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-6 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                <i class="fa-solid fa-plus text-xs"></i> Add visit details
+            </button>
+        <?php else: ?>
+            <span class="text-xs text-slate-500 italic">
+                <i class="fa-solid fa-lock text-[10px] mr-1"></i> Visit logging restricted to Editor & Admin
+            </span>
+        <?php endif; ?>
 
-        <!-- Pagination (Shown only if records exceed 10) -->
-        <?php if (!empty($visits) && count($visits) > 10): ?>
-            <nav class="flex items-center gap-2 text-xs text-slate-400">
-                <span class="text-white font-bold px-2 py-0.5 rounded bg-blue-600">1</span>
-                <span class="text-slate-500">Showing <?= count($visits) ?> records</span>
-            </nav>
+        <!-- Visits Pagination (10 per page) -->
+        <?php if (isset($v_total_pages) && $v_total_pages > 1): ?>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-slate-500">
+                    Page <strong class="text-slate-300"><?= $v_current_page ?></strong> of <strong class="text-slate-300"><?= $v_total_pages ?></strong>
+                </span>
+                <nav class="flex items-center gap-1 text-xs font-medium">
+                    <?php if ($v_current_page > 1): ?>
+                        <a href="<?= base_url('main/member_details/' . $member['id'] . '?vpage=' . ($v_current_page - 1)) ?>"
+                            class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">&larr; Prev</a>
+                    <?php endif; ?>
+
+                    <?php for ($p = 1; $p <= $v_total_pages; $p++): ?>
+                        <?php if ($p == $v_current_page): ?>
+                            <span class="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold"><?= $p ?></span>
+                        <?php else: ?>
+                            <a href="<?= base_url('main/member_details/' . $member['id'] . '?vpage=' . $p) ?>"
+                                class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"><?= $p ?></a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+
+                    <?php if ($v_current_page < $v_total_pages): ?>
+                        <a href="<?= base_url('main/member_details/' . $member['id'] . '?vpage=' . ($v_current_page + 1)) ?>"
+                            class="px-2.5 py-1 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">Next &rarr;</a>
+                    <?php endif; ?>
+                </nav>
+            </div>
         <?php endif; ?>
     </div>
 </div>
 
 <!-- ======================================================= -->
-<!-- MODAL: Add visit Details                                -->
+<!-- MODAL: Add visit Details (Admin & Editor only)          -->
 <!-- ======================================================= -->
-<div id="visitModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 transition-all">
-    <div class="w-full max-w-md bg-darkCard border border-darkBorder rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-95 duration-200" id="modalCard">
+<?php if ($can_edit): ?>
+    <div id="visitModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 transition-all">
+        <div class="w-full max-w-md bg-darkCard border border-darkBorder rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-95 duration-200" id="modalCard">
 
-        <!-- Modal Header -->
-        <div class="px-6 py-4 border-b border-darkBorder bg-[#0A1020] flex items-center justify-between">
-            <h3 class="text-base font-bold text-white tracking-wide flex items-center gap-2">
-                <i class="fa-solid fa-calendar-plus text-blue-400"></i> Add Visit Details
-            </h3>
-            <button type="button" id="closeModalCross" class="text-slate-400 hover:text-white text-lg focus:outline-none">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-
-        <!-- Modal Form -->
-        <form action="<?= base_url('main/add_visit') ?>" method="POST" class="p-6 space-y-4">
-            <input type="hidden" name="member_id" value="<?= $member['id'] ?>">
-
-            <!-- Date -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Visit Date</label>
-                <input type="date" name="visit_date" required value="<?= date('Y-m-d') ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition cursor-pointer">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-darkBorder bg-[#0A1020] flex items-center justify-between">
+                <h3 class="text-base font-bold text-white tracking-wide flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-plus text-blue-400"></i> Add Visit Details
+                </h3>
+                <button type="button" id="closeModalCross" class="text-slate-400 hover:text-white text-lg focus:outline-none">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
-            <!-- No of Pax (Max 25) -->
-            <div>
-                <div class="flex items-center justify-between mb-2">
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">No of Pax</label>
-                    <span class="text-[10px] text-slate-400">Limit: 1 to 25</span>
+            <!-- Modal Form -->
+            <form action="<?= base_url('main/add_visit') ?>" method="POST" class="p-6 space-y-4">
+                <input type="hidden" name="member_id" value="<?= $member['id'] ?>">
+
+                <!-- Date -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Visit Date</label>
+                    <input type="date" name="visit_date" required value="<?= date('Y-m-d') ?>"
+                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition cursor-pointer">
                 </div>
-                <input type="number" name="no_of_pax" required min="1" max="25" value="1" placeholder="1 - 25"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition">
-            </div>
 
-            <!-- APC -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">APC (Average Per Cover)</label>
-                <input type="number" step="0.01" min="0" name="apc" required placeholder="0.00"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition">
-            </div>
+                <!-- No of Pax (Max 25) -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">No of Pax</label>
+                        <span class="text-[10px] text-slate-400">Limit: 1 to 25</span>
+                    </div>
+                    <input type="number" name="no_of_pax" required min="1" max="25" value="1" placeholder="1 - 25"
+                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition">
+                </div>
 
-            <!-- Modal Action Buttons -->
-            <div class="pt-4 border-t border-darkBorder flex items-center justify-end gap-3">
-                <button type="button" id="closeModalBtn"
-                    class="bg-transparent hover:bg-slate-800 text-slate-300 text-xs font-semibold uppercase tracking-wider px-5 py-2.5 rounded-xl border border-darkBorder transition">
-                    Cancel
-                </button>
-                <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold uppercase tracking-wider px-6 py-2.5 rounded-xl shadow-lg shadow-blue-600/20 transition">
-                    Save Visit
-                </button>
-            </div>
-        </form>
+                <!-- APC -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">APC (Average Per Cover)</label>
+                    <input type="number" step="0.01" min="0" name="apc" required placeholder="0.00"
+                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition">
+                </div>
 
+                <!-- Modal Action Buttons -->
+                <div class="pt-4 border-t border-darkBorder flex items-center justify-end gap-3">
+                    <button type="button" id="closeModalBtn"
+                        class="bg-transparent hover:bg-slate-800 text-slate-300 text-xs font-semibold uppercase tracking-wider px-5 py-2.5 rounded-xl border border-darkBorder transition">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold uppercase tracking-wider px-6 py-2.5 rounded-xl shadow-lg shadow-blue-600/20 transition">
+                        Save Visit
+                    </button>
+                </div>
+            </form>
+
+        </div>
     </div>
-</div>
 
-<!-- Modal Open / Close Script -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('visitModal');
-        const modalCard = document.getElementById('modalCard');
-        const openBtn = document.getElementById('openVisitModalBtn');
-        const closeCross = document.getElementById('closeModalCross');
-        const closeBtn = document.getElementById('closeModalBtn');
+    <!-- Modal Open / Close Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('visitModal');
+            const modalCard = document.getElementById('modalCard');
+            const openBtn = document.getElementById('openVisitModalBtn');
+            const closeCross = document.getElementById('closeModalCross');
+            const closeBtn = document.getElementById('closeModalBtn');
 
-        function openModal() {
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modalCard.classList.remove('scale-95');
-                modalCard.classList.add('scale-100');
-            }, 10);
-        }
-
-        function closeModal() {
-            modalCard.classList.remove('scale-100');
-            modalCard.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 150);
-        }
-
-        if (openBtn) openBtn.addEventListener('click', openModal);
-        if (closeCross) closeCross.addEventListener('click', closeModal);
-        if (closeBtn) closeBtn.addEventListener('click', closeModal);
-
-        // Close when clicking the backdrop outside the card
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeModal();
+            function openModal() {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modalCard.classList.remove('scale-95');
+                    modalCard.classList.add('scale-100');
+                }, 10);
             }
+
+            function closeModal() {
+                modalCard.classList.remove('scale-100');
+                modalCard.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 150);
+            }
+
+            if (openBtn) openBtn.addEventListener('click', openModal);
+            if (closeCross) closeCross.addEventListener('click', closeModal);
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
         });
-    });
-</script>
+    </script>
+<?php endif; ?>

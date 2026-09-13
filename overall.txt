@@ -32,14 +32,14 @@ reset password: visilbe to all.
 
 
 do to: 
-make em work: user management, add user, user profile, reset password, login 
+make em work: user management, add user, user profile, reset password, login -done
 
 
 lets see:
  users module remianing, 
     we can do the whole thing first then we 'hide' it 
     todo: user management, add user, user profile, reset password, login 
-    role: 
+    role: -done
         admin: has user manage and user, add edit delete user , members, visits 
         viewer: no data add member, visits, user 
         editor: add edit member visits, 

@@ -41,7 +41,7 @@
                 <h3 class="text-sm font-bold text-white tracking-wide">Registered Users</h3>
             </div>
             <span class="text-xs text-slate-400 font-mono">
-                Showing <?= count($users ?? []) ?> active user<?= count($users ?? []) === 1 ? '' : 's' ?>
+                Total Records: <strong class="text-white"><?= isset($total_count) ? $total_count : count($users ?? []) ?></strong>
             </span>
         </div>
 
@@ -82,9 +82,10 @@
                             </td>
                         </tr>
                     <?php else: ?>
-                        <?php foreach ($users as $index => $u):
+                        <?php
+                        $sr_offset = isset($current_page) && isset($per_page) ? ($current_page - 1) * $per_page : 0;
+                        foreach ($users as $index => $u):
                             $access_level = !empty($u['access']) ? $u['access'] : (!empty($u['role']) ? $u['role'] : 'Viewer');
-                            // Clean JSON data for modal population
                             $userData = htmlspecialchars(json_encode([
                                 'id'         => $u['id'],
                                 'name'       => $u['name'],
@@ -103,7 +104,7 @@
 
                                 <!-- Sr.No. -->
                                 <td class="py-4 px-4 text-center font-mono text-xs text-slate-500">
-                                    <?= $index + 1 ?>
+                                    <?= $sr_offset + $index + 1 ?>
                                 </td>
 
                                 <!-- User (Name + Email + Username) -->
@@ -147,6 +148,46 @@
             </table>
         </div>
 
+        <!-- Pagination Bar (10 rows per page) -->
+        <?php if (isset($total_pages) && $total_pages > 1): ?>
+            <?php
+            $queryParams = $_GET;
+            unset($queryParams['page']);
+            $baseQuery = http_build_query($queryParams);
+            $queryPrefix = !empty($baseQuery) ? '?' . $baseQuery . '&page=' : '?page=';
+            ?>
+            <div class="px-6 py-4 border-t border-darkBorder bg-[#0A1020] flex items-center justify-between">
+                <span class="text-xs text-slate-500">
+                    Showing page <strong class="text-slate-300"><?= $current_page ?></strong> of <strong class="text-slate-300"><?= $total_pages ?></strong> (10 records/page)
+                </span>
+
+                <nav class="flex items-center gap-1 text-xs font-medium">
+                    <?php if ($current_page > 1): ?>
+                        <a href="<?= base_url('main/users' . $queryPrefix . ($current_page - 1)) ?>"
+                            class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">&larr; Prev</a>
+                    <?php endif; ?>
+
+                    <?php
+                    $start = max(1, $current_page - 2);
+                    $end = min($total_pages, $current_page + 2);
+                    for ($p = $start; $p <= $end; $p++):
+                    ?>
+                        <?php if ($p == $current_page): ?>
+                            <span class="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold"><?= $p ?></span>
+                        <?php else: ?>
+                            <a href="<?= base_url('main/users' . $queryPrefix . $p) ?>"
+                                class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"><?= $p ?></a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+
+                    <?php if ($current_page < $total_pages): ?>
+                        <a href="<?= base_url('main/users' . $queryPrefix . ($current_page + 1)) ?>"
+                            class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">Next &rarr;</a>
+                    <?php endif; ?>
+                </nav>
+            </div>
+        <?php endif; ?>
+
         <!-- Bottom Action Buttons: Add User, Edit, Delete -->
         <div class="p-6 bg-[#0A1020] border-t border-darkBorder flex items-center justify-center gap-3">
             <a href="<?= base_url('main/add_user') ?>"
@@ -164,14 +205,6 @@
                 <i class="fa-regular fa-trash-can text-xs"></i> Delete
             </button>
         </div>
-
-        <?php if (!empty($users) && count($users) > 10): ?>
-            <div class="py-3.5 px-6 border-t border-darkBorder/60 bg-darkCard text-center">
-                <nav class="inline-flex items-center gap-2 text-xs text-slate-400 select-none">
-                    <span class="text-slate-500">Total <?= count($users) ?> users</span>
-                </nav>
-            </div>
-        <?php endif; ?>
 
     </div>
 </form>
@@ -300,7 +333,6 @@
             if (e.target === modal) closeModal();
         });
 
-        // Master select/unselect all
         if (selectAll) {
             selectAll.addEventListener('change', function() {
                 rowCheckboxes.forEach(cb => {
@@ -310,7 +342,6 @@
             });
         }
 
-        // Row checkbox toggle
         rowCheckboxes.forEach(cb => {
             cb.addEventListener('change', function() {
                 toggleRowHighlight(this);
@@ -329,7 +360,7 @@
             }
         }
 
-        // Edit button click: opens modal and loads data
+        // Edit button click
         document.getElementById('editSelectedBtn').addEventListener('click', function() {
             const checked = document.querySelectorAll('.row-checkbox:checked');
             if (checked.length === 0) {

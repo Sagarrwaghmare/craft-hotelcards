@@ -131,19 +131,15 @@
                                 </div>
                             </td>
 
-                            <!-- Card Type Badge -->
+                            <!-- Card Type Badge (Gold / Platinum only) -->
                             <td class="py-4 px-6">
                                 <?php if (strtolower($row['type']) === 'gold'): ?>
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
                                         <i class="fa-solid fa-crown text-[10px] mr-1.5"></i> Gold
                                     </span>
-                                <?php elseif (strtolower($row['type']) === 'platinum'): ?>
+                                <?php else: ?>
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-400/10 text-slate-300 border border-slate-400/30">
                                         <i class="fa-solid fa-gem text-[10px] mr-1.5"></i> Platinum
-                                    </span>
-                                <?php else: ?>
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-500/10 text-gray-300 border border-gray-500/30">
-                                        <?= htmlspecialchars($row['type']) ?>
                                     </span>
                                 <?php endif; ?>
                             </td>
@@ -191,6 +187,14 @@
         </table>
     </div>
 
+    <!-- 10 Events Per Page Pagination Bar -->
+    <div id="eventsPaginationBar" class="px-6 py-4 border-t border-darkBorder bg-[#0A1020] flex items-center justify-between">
+        <span class="text-xs text-slate-500" id="eventsPageInfo">
+            Showing 10 records per page
+        </span>
+        <nav class="flex items-center gap-1 text-xs font-medium" id="eventsPageNav"></nav>
+    </div>
+
     <!-- Export Action Footer -->
     <div class="p-6 bg-[#0A1020] border-t border-darkBorder flex justify-center">
         <button type="button" onclick="openExportModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs tracking-wider uppercase px-8 py-3 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-lg hover:border-blue-500/50">
@@ -221,7 +225,6 @@
 
             <!-- Format Options Grid -->
             <div class="grid grid-cols-2 gap-4">
-
                 <!-- Option 1: CSV -->
                 <button type="button" onclick="exportToCSV()" class="group bg-slate-900/80 hover:bg-emerald-950/30 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 flex flex-col items-center text-center transition">
                     <div class="w-12 h-12 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mb-3 group-hover:scale-110 transition">
@@ -251,38 +254,45 @@
 
 </div>
 
-<!-- JavaScript: Toggle Filtering Logic -->
+<!-- JavaScript: Toggle Filtering + 10-Row Pagination -->
 <script>
     let currentFilter = 'all'; // 'all', 'gold', or 'platinum'
+    let currentPage = 1;
+    const pageSize = 10; // Exactly 10 records per page
 
     function toggleCardFilter(type) {
-        // If already selected, reset to all
         if (currentFilter === type) {
             resetFilters();
             return;
         }
-
         currentFilter = type;
-        applyFilter();
+        currentPage = 1;
+        applyFilterAndPagination();
     }
 
     function resetFilters() {
         currentFilter = 'all';
-        applyFilter();
+        currentPage = 1;
+        applyFilterAndPagination();
     }
 
-    function applyFilter() {
-        const rows = document.querySelectorAll('.event-row');
+    function changePage(newPage) {
+        currentPage = newPage;
+        applyFilterAndPagination();
+    }
+
+    function applyFilterAndPagination() {
+        const rows = Array.from(document.querySelectorAll('.event-row'));
         const goldCard = document.getElementById('card-filter-gold');
         const platCard = document.getElementById('card-filter-platinum');
         const goldBadge = document.getElementById('badge-gold');
         const platBadge = document.getElementById('badge-platinum');
         const resetBtn = document.getElementById('filter-reset-btn');
         const countDisplay = document.getElementById('visible-count');
+        const pageInfo = document.getElementById('eventsPageInfo');
+        const pageNav = document.getElementById('eventsPageNav');
 
-        let visibleCount = 0;
-
-        // Reset visual styles on cards
+        // Reset visual card styling
         goldCard.classList.remove('ring-2', 'ring-amber-400', 'bg-amber-950/20');
         platCard.classList.remove('ring-2', 'ring-slate-300', 'bg-slate-800/50');
         goldBadge.classList.add('hidden');
@@ -300,28 +310,75 @@
             resetBtn.classList.add('hidden');
         }
 
-        // Show/Hide table rows
-        rows.forEach(row => {
+        // Filter rows by card type
+        const matchingRows = rows.filter(row => {
             const rowType = row.getAttribute('data-type');
-            if (currentFilter === 'all' || rowType === currentFilter) {
+            return (currentFilter === 'all' || rowType === currentFilter);
+        });
+
+        const totalMatching = matchingRows.length;
+        const totalPages = Math.max(1, Math.ceil(totalMatching / pageSize));
+
+        if (currentPage > totalPages) {
+            currentPage = totalPages;
+        }
+
+        // Show/hide based on pagination (10 per page)
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+
+        rows.forEach(row => {
+            row.style.display = 'none';
+        });
+
+        matchingRows.forEach((row, idx) => {
+            if (idx >= startIndex && idx < endIndex) {
                 row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
             }
         });
 
         if (countDisplay) {
-            countDisplay.innerText = visibleCount + ' events';
+            countDisplay.innerText = totalMatching + ' events';
+        }
+
+        // Build pagination controls
+        if (pageInfo) {
+            pageInfo.innerHTML = `Showing page <strong class="text-slate-300">${currentPage}</strong> of <strong class="text-slate-300">${totalPages}</strong> (${totalMatching} total events)`;
+        }
+
+        if (pageNav) {
+            if (totalPages <= 1) {
+                pageNav.innerHTML = '';
+            } else {
+                let navHtml = '';
+                if (currentPage > 1) {
+                    navHtml += `<button type="button" onclick="changePage(${currentPage - 1})" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">&larr; Prev</button>`;
+                }
+                for (let p = 1; p <= totalPages; p++) {
+                    if (p === currentPage) {
+                        navHtml += `<span class="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold">${p}</span>`;
+                    } else {
+                        navHtml += `<button type="button" onclick="changePage(${p})" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">${p}</button>`;
+                    }
+                }
+                if (currentPage < totalPages) {
+                    navHtml += `<button type="button" onclick="changePage(${currentPage + 1})" class="px-2.5 py-1 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">Next &rarr;</button>`;
+                }
+                pageNav.innerHTML = navHtml;
+            }
         }
     }
+
+    // Initialize pagination on load
+    document.addEventListener('DOMContentLoaded', function() {
+        applyFilterAndPagination();
+    });
 </script>
 
 <!-- html2pdf.js CDN for direct PDF downloads -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
-    // Modal controls
     function openExportModal() {
         const modal = document.getElementById('exportModal');
         modal.classList.remove('hidden');
@@ -334,7 +391,6 @@
         modal.classList.remove('flex');
     }
 
-    // Close on backdrop click or ESC key
     document.getElementById('exportModal').addEventListener('click', function(e) {
         if (e.target === this) closeExportModal();
     });
@@ -342,18 +398,17 @@
         if (e.key === 'Escape') closeExportModal();
     });
 
-    // 1. EXPORT TO CSV
+    // 1. EXPORT TO CSV (Exports all matching events under current filter)
     function exportToCSV() {
         closeExportModal();
 
         const rows = document.querySelectorAll('#eventsTable tbody tr.event-row');
-        // Prepend UTF-8 BOM (\uFEFF) so Excel opens all characters and names properly
         let csvContent = "\uFEFFMember Name,Contact No,Card Type,Event,Date,Schedule\n";
         let count = 0;
 
         rows.forEach(row => {
-            // Respect active Gold/Platinum filters
-            if (row.style.display === 'none') return;
+            const rowType = row.getAttribute('data-type');
+            if (currentFilter !== 'all' && rowType !== currentFilter) return;
 
             const name = `"${(row.dataset.name  || '').replace(/"/g, '""')}"`;
             const phone = `"${(row.dataset.phone || '').replace(/"/g, '""')}"`;
@@ -385,7 +440,7 @@
         URL.revokeObjectURL(url);
     }
 
-    // 2. EXPORT TO PDF (Matches the exact clean corporate report layout)
+    // 2. EXPORT TO PDF
     function exportToPDF() {
         closeExportModal();
 
@@ -393,16 +448,17 @@
         const visibleRows = [];
 
         rows.forEach(row => {
-            if (row.style.display !== 'none') {
-                visibleRows.push({
-                    name: row.dataset.name || '',
-                    phone: row.dataset.phone || '-',
-                    card: row.dataset.card || '',
-                    event: row.dataset.event || '',
-                    date: row.dataset.date || '',
-                    days: row.dataset.days || ''
-                });
-            }
+            const rowType = row.getAttribute('data-type');
+            if (currentFilter !== 'all' && rowType !== currentFilter) return;
+
+            visibleRows.push({
+                name: row.dataset.name || '',
+                phone: row.dataset.phone || '-',
+                card: row.dataset.card || '',
+                event: row.dataset.event || '',
+                date: row.dataset.date || '',
+                days: row.dataset.days || ''
+            });
         });
 
         if (visibleRows.length === 0) {
@@ -410,7 +466,6 @@
             return;
         }
 
-        // Format current date matching report header (e.g., "Jan 01, 2026")
         const now = new Date();
         const formattedDate = now.toLocaleDateString('en-US', {
             year: 'numeric',
@@ -418,7 +473,6 @@
             day: '2-digit'
         });
 
-        // Build table rows HTML
         let tableRowsHtml = '';
         visibleRows.forEach(item => {
             tableRowsHtml += `
@@ -433,7 +487,6 @@
             `;
         });
 
-        // Build the clean offscreen report matching the screenshot
         const printContainer = document.createElement('div');
         printContainer.style.position = 'fixed';
         printContainer.style.left = '-9999px';

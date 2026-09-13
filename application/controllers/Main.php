@@ -1,3 +1,4 @@
+
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
@@ -17,7 +18,6 @@ class Main extends CI_Controller
         }
     }
 
-    // Role Guard: Restricts admin-only actions and views
     private function _require_admin()
     {
         $role = strtolower(trim((string)$this->session->userdata('access')));
@@ -200,7 +200,6 @@ class Main extends CI_Controller
         }
     }
 
-    // Bulk update common operational fields across multiple members (Only Gold & Platinum)
     public function bulk_update_members()
     {
         $role = strtolower(trim((string)$this->session->userdata('access')));
@@ -223,31 +222,26 @@ class Main extends CI_Controller
 
         $update_data = [];
 
-        // Only Gold and Platinum
         $card_type = $this->input->post('bulk_card_type', TRUE);
         if (!empty($card_type) && in_array($card_type, ['Gold', 'Platinum'])) {
             $update_data['card_type'] = $card_type;
         }
 
-        // Company Name
         $company_name = trim((string)$this->input->post('bulk_company_name', TRUE));
         if ($this->input->post('apply_company', TRUE) === '1') {
             $update_data['company_name'] = !empty($company_name) ? $company_name : null;
         }
 
-        // Designation
         $designation = trim((string)$this->input->post('bulk_designation', TRUE));
         if ($this->input->post('apply_designation', TRUE) === '1') {
             $update_data['designation'] = !empty($designation) ? $designation : null;
         }
 
-        // Marital Status
         $marital_status = $this->input->post('bulk_marital_status', TRUE);
         if (!empty($marital_status) && in_array($marital_status, ['Single', 'Married', 'Divorced', 'Widowed', 'Other'])) {
             $update_data['marital_status'] = $marital_status;
         }
 
-        // Notes
         $notes = trim((string)$this->input->post('bulk_notes', TRUE));
         if ($this->input->post('apply_notes', TRUE) === '1') {
             $update_data['notes'] = !empty($notes) ? $notes : null;
@@ -297,7 +291,7 @@ class Main extends CI_Controller
         $data['active_menu']    = 'members';
         $data['gold_count']     = $this->Member_model->count_by_type('Gold');
         $data['platinum_count'] = $this->Member_model->count_by_type('Platinum');
-        $data['events']         = $this->Member_model->get_upcoming_events(25);
+        $data['events']         = $this->Member_model->get_upcoming_events(50); // Fetch top upcoming events
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
@@ -406,6 +400,7 @@ class Main extends CI_Controller
         exit;
     }
 
+    // User Management (10 records per page)
     public function users()
     {
         $this->_require_admin();
@@ -414,8 +409,17 @@ class Main extends CI_Controller
 
         $data['title']       = 'User Management';
         $data['active_menu'] = 'users';
-        $data['users']       = $this->User_model->get_all();
-        $data['total_count'] = $this->User_model->count_all();
+
+        $total_rows   = $this->User_model->count_all();
+        $per_page     = 10; // Default: 10 users per page
+        $current_page = max(1, (int)$this->input->get('page'));
+        $offset       = ($current_page - 1) * $per_page;
+
+        $data['users']        = $this->User_model->get_paginated($per_page, $offset);
+        $data['total_count']  = $total_rows;
+        $data['current_page'] = $current_page;
+        $data['per_page']     = $per_page;
+        $data['total_pages']  = max(1, ceil($total_rows / $per_page));
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
@@ -494,6 +498,7 @@ class Main extends CI_Controller
         redirect('main/users');
     }
 
+    // Member Details (With 10 visits per page pagination)
     public function member_details($member_id = null)
     {
         if (empty($member_id)) {
@@ -511,8 +516,18 @@ class Main extends CI_Controller
             show_404();
         }
 
-        $data['visits']      = $this->Visit_model->get_by_member_id($member_id);
-        $data['summary']     = $this->Visit_model->get_member_summary($member_id);
+        // Paginate visits: 10 records per page
+        $v_per_page   = 10;
+        $v_page       = max(1, (int)$this->input->get('vpage'));
+        $v_offset     = ($v_page - 1) * $v_per_page;
+        $total_visits = $this->Visit_model->count_by_member_id($member_id);
+
+        $data['visits']         = $this->Visit_model->get_by_member_id($member_id, $v_per_page, $v_offset);
+        $data['total_visits']   = $total_visits;
+        $data['v_current_page'] = $v_page;
+        $data['v_per_page']     = $v_per_page;
+        $data['v_total_pages']  = max(1, ceil($total_visits / $v_per_page));
+        $data['summary']        = $this->Visit_model->get_member_summary($member_id);
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);

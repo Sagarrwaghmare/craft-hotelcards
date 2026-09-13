@@ -1,3 +1,4 @@
+
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
@@ -11,31 +12,36 @@ class Visit_model extends CI_Model
         parent::__construct();
     }
 
-    // Get all visits
     public function get_all()
     {
         $query = $this->db->order_by('visit_date', 'DESC')->get($this->table);
         return $query->result_array();
     }
 
-    // Get single visit by ID
     public function get_by_id($id)
     {
         $query = $this->db->get_where($this->table, array('id' => $id));
         return $query->row_array();
     }
 
-    // Get all visits for a specific member
-    public function get_by_member_id($member_id)
+    // Get paginated visits for a specific member (default: 10 per page)
+    public function get_by_member_id($member_id, $limit = null, $offset = null)
     {
         $this->db->where('member_id', $member_id);
         $this->db->order_by('visit_date', 'DESC');
         $this->db->order_by('id', 'DESC');
+        if ($limit !== null) {
+            $this->db->limit($limit, $offset);
+        }
         $query = $this->db->get($this->table);
         return $query->result_array();
     }
 
-    // Get visits with Member & Staff details joined
+    public function count_by_member_id($member_id)
+    {
+        return $this->db->where('member_id', $member_id)->count_all_results($this->table);
+    }
+
     public function get_visits_detailed($limit = null, $offset = null)
     {
         $this->db->select('v.*, m.first_name, m.last_name, m.card_number, m.card_type, u.name as logged_by');
@@ -52,7 +58,6 @@ class Visit_model extends CI_Model
         return $query->result_array();
     }
 
-    // Get quick summary/stats for a member (Total Visits, Total PAX, Average APC)
     public function get_member_summary($member_id)
     {
         $this->db->select('
@@ -65,28 +70,24 @@ class Visit_model extends CI_Model
         return $query->row_array();
     }
 
-    // Insert visit
     public function add($data)
     {
         $this->db->insert($this->table, $data);
         return $this->db->insert_id();
     }
 
-    // Update visit
     public function update($id, $data)
     {
         $this->db->where('id', $id);
         return $this->db->update($this->table, $data);
     }
 
-    // Delete single visit
     public function delete($id)
     {
         $this->db->where('id', $id);
         return $this->db->delete($this->table);
     }
 
-    // Delete all visits for a specific member
     public function delete_by_member_id($member_id)
     {
         $this->db->where('member_id', $member_id);

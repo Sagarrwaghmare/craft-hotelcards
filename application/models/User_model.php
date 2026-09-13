@@ -17,6 +17,12 @@ class User_model extends CI_Model
         $query = $this->db->order_by('id', 'DESC')->get($this->table);
         return $query->result_array();
     }
+    // Get paginated users (default: 10 per page)
+    public function get_paginated($limit = 10, $offset = 0)
+    {
+        $query = $this->db->order_by('id', 'DESC')->limit($limit, $offset)->get($this->table);
+        return $query->result_array();
+    }
 
     // Get user by ID
     public function get_by_id($id)
