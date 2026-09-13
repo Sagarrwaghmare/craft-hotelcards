@@ -9,6 +9,11 @@ if ($is_edit && !empty($m->card_number)) {
     $parts = explode('-', $m->card_number);
     $existing_suffix = end($parts);
 }
+
+// Role Check: Check if currently logged in user is a Viewer
+$current_role = strtolower(trim((string)$this->session->userdata('access')));
+$is_viewer    = ($current_role === 'viewer');
+$disabled_attr = $is_viewer ? 'disabled' : '';
 ?>
 
 <!-- Header Title -->
@@ -22,7 +27,9 @@ if ($is_edit && !empty($m->card_number)) {
             <h2 class="text-2xl font-bold text-white tracking-tight">
                 <?= $is_edit ? 'Edit Member Details' : 'Add Member' ?>
             </h2>
-            <p class="text-xs text-slate-400">Fill in the required credentials and personal information.</p>
+            <p class="text-xs text-slate-400">
+                <?= $is_viewer ? 'Viewing member information in read-only mode.' : 'Fill in the required credentials and personal information.' ?>
+            </p>
         </div>
     </div>
     <a href="<?= base_url('main/members_list') ?>" class="text-xs text-slate-300 border border-darkBorder px-3.5 py-2 rounded-lg hover:bg-slate-800 transition flex items-center gap-2">
@@ -33,8 +40,15 @@ if ($is_edit && !empty($m->card_number)) {
 <!-- Flash Alerts (Error / Validation) -->
 <?php if ($this->session->flashdata('error')): ?>
     <div class="max-w-5xl mx-auto mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-3">
-        <i class="fa-solid fa-circle-exclamation text-sm"></i>
+        <i class="fa-solid fa-circle-exclamation text-sm shrink-0"></i>
         <span><?= $this->session->flashdata('error') ?></span>
+    </div>
+<?php endif; ?>
+
+<?php if ($is_viewer): ?>
+    <div class="max-w-5xl mx-auto mb-6 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-3">
+        <i class="fa-solid fa-lock text-sm shrink-0"></i>
+        <span>You are logged in with <strong>Viewer</strong> access. Adding and modifying member records is disabled.</span>
     </div>
 <?php endif; ?>
 
@@ -48,17 +62,17 @@ if ($is_edit && !empty($m->card_number)) {
             <!-- Card Type -->
             <div class="mb-5">
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Card Type <span class="text-red-400">*</span>
+                    Card Type <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                         <i class="fa-regular fa-credit-card text-sm"></i>
                     </div>
-                    <select name="card_type" id="cardTypeSelect" required
-                        class="w-full bg-[#111C38] border border-darkBorder rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition appearance-none cursor-pointer">
+                    <select name="card_type" id="cardTypeSelect" required <?= $disabled_attr ?>
+                        class="w-full bg-[#111C38] border border-darkBorder rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition appearance-none cursor-pointer <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
                         <option value="Gold" <?= ($is_edit && $m->card_type === 'Gold') ? 'selected' : (!isset($m) ? 'selected' : '') ?>>Gold (Prefix 666)</option>
                         <option value="Platinum" <?= ($is_edit && $m->card_type === 'Platinum') ? 'selected' : '' ?>>Platinum (Prefix 999)</option>
-                        <!-- <option value="Silver" <?= ($is_edit && $m->card_type === 'Silver') ? 'selected' : '' ?>>Silver (Prefix 333)</option> -->
+                        <option value="Silver" <?= ($is_edit && $m->card_type === 'Silver') ? 'selected' : '' ?>>Silver (Prefix 333)</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
                         <i class="fa-solid fa-chevron-down text-xs"></i>
@@ -69,7 +83,7 @@ if ($is_edit && !empty($m->card_number)) {
             <!-- Card Number with Dynamic Type Prefix & Year Badge -->
             <div>
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Card Number <span class="text-red-400">*</span>
+                    Card Number <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
                 <div class="flex items-center gap-2">
                     <!-- Hidden fields submitted with form -->
@@ -84,15 +98,15 @@ if ($is_edit && !empty($m->card_number)) {
 
                     <!-- Unchangeable Current Year Badge -->
                     <span id="cardYearBadge"
-                        class="px-3 py-2.5 bg-slate-800/80 border border-slate-700 text-blue-400 font-mono text-xs rounded-xl font-bold select-none"
+                        class="px-3.5 py-2.5 bg-slate-800/80 border border-slate-700 text-blue-400 font-mono text-xs rounded-xl font-bold select-none"
                         title="Current Registration Year">
                         <?= date('Y') ?>
                     </span>
 
                     <!-- Dynamic User-defined Remaining Suffix -->
                     <input type="text" name="card_suffix" id="cardSuffixInput" required placeholder="e.g. 0042" maxlength="10"
-                        value="<?= htmlspecialchars($existing_suffix) ?>"
-                        class="flex-1 bg-[#111C38] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition">
+                        value="<?= htmlspecialchars($existing_suffix) ?>" <?= $disabled_attr ?>
+                        class="flex-1 bg-[#111C38] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
                 </div>
                 <span class="text-[11px] text-slate-500 mt-1 block">Full Card No Preview: <strong id="cardPreview" class="text-slate-300 font-mono">666-<?= date('Y') ?>-XXXX</strong></span>
             </div>
@@ -103,21 +117,21 @@ if ($is_edit && !empty($m->card_number)) {
             <!-- First Name -->
             <div>
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    First Name <span class="text-red-400">*</span>
+                    First Name <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
-                <input type="text" name="first_name" required placeholder="Enter first name"
+                <input type="text" name="first_name" required placeholder="Enter first name" <?= $disabled_attr ?>
                     value="<?= $is_edit ? htmlspecialchars($m->first_name) : '' ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
             </div>
 
             <!-- Last Name -->
             <div>
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Last Name <span class="text-red-400">*</span>
+                    Last Name <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
-                <input type="text" name="last_name" required placeholder="Enter last name"
+                <input type="text" name="last_name" required placeholder="Enter last name" <?= $disabled_attr ?>
                     value="<?= $is_edit ? htmlspecialchars($m->last_name) : '' ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
             </div>
 
             <!-- Company Name -->
@@ -125,9 +139,9 @@ if ($is_edit && !empty($m->card_number)) {
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
                     Company Name
                 </label>
-                <input type="text" name="company_name" placeholder="Enter company name"
+                <input type="text" name="company_name" placeholder="Enter company name" <?= $disabled_attr ?>
                     value="<?= $is_edit && !empty($m->company_name) ? htmlspecialchars($m->company_name) : '' ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
             </div>
 
             <!-- Designation -->
@@ -135,38 +149,38 @@ if ($is_edit && !empty($m->card_number)) {
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
                     Designation
                 </label>
-                <input type="text" name="designation" placeholder="e.g. Senior Manager"
+                <input type="text" name="designation" placeholder="e.g. Senior Manager" <?= $disabled_attr ?>
                     value="<?= $is_edit && !empty($m->designation) ? htmlspecialchars($m->designation) : '' ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
             </div>
 
             <!-- Contact No -->
             <div>
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Contact No <span class="text-red-400">*</span>
+                    Contact No <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                         <i class="fa-solid fa-phone text-xs"></i>
                     </div>
-                    <input type="tel" name="contact_no" required placeholder="Enter contact number"
+                    <input type="tel" name="contact_no" required placeholder="Enter contact number" <?= $disabled_attr ?>
                         value="<?= $is_edit && !empty($m->contact_no) ? htmlspecialchars($m->contact_no) : '' ?>"
-                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition font-mono">
+                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition font-mono <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
                 </div>
             </div>
 
             <!-- Email Id -->
             <div>
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Email ID <span class="text-red-400">*</span>
+                    Email ID <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                         <i class="fa-regular fa-envelope text-xs"></i>
                     </div>
-                    <input type="email" name="email" required placeholder="Enter email address"
+                    <input type="email" name="email" required placeholder="Enter email address" <?= $disabled_attr ?>
                         value="<?= $is_edit && !empty($m->email) ? htmlspecialchars($m->email) : '' ?>"
-                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
                 </div>
             </div>
         </div>
@@ -174,8 +188,8 @@ if ($is_edit && !empty($m->card_number)) {
         <!-- SECTION 3: Address -->
         <div>
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Address</label>
-            <textarea name="address" rows="2" placeholder="Enter complete residential or office address"
-                class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"><?= $is_edit && !empty($m->address) ? htmlspecialchars($m->address) : '' ?></textarea>
+            <textarea name="address" rows="2" placeholder="Enter complete residential or office address" <?= $disabled_attr ?>
+                class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>"><?= $is_edit && !empty($m->address) ? htmlspecialchars($m->address) : '' ?></textarea>
         </div>
 
         <!-- SECTION 4: DOB, Marital Status & Anniversary -->
@@ -183,21 +197,21 @@ if ($is_edit && !empty($m->card_number)) {
             <!-- Date of Birth (DOB) -->
             <div>
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                    Date of Birth (DOB) <span class="text-red-400">*</span>
+                    Date of Birth (DOB) <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
-                <input type="date" name="dob" required
+                <input type="date" name="dob" required <?= $disabled_attr ?>
                     value="<?= $is_edit && !empty($m->dob) ? htmlspecialchars($m->dob) : '' ?>"
-                    class="w-full bg-[#111C38] border border-darkBorder rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition cursor-pointer">
+                    class="w-full bg-[#111C38] border border-darkBorder rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition cursor-pointer <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
             </div>
 
-            <!-- Marital Status (Matches DB enum: Single, Married, Divorced, Widowed, Other) -->
+            <!-- Marital Status -->
             <div>
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
                     Marital Status
                 </label>
                 <div class="relative">
-                    <select name="marital_status" id="maritalStatusSelect"
-                        class="w-full bg-[#111C38] border border-darkBorder rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition appearance-none cursor-pointer">
+                    <select name="marital_status" id="maritalStatusSelect" <?= $disabled_attr ?>
+                        class="w-full bg-[#111C38] border border-darkBorder rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition appearance-none cursor-pointer <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
                         <option value="Single" <?= (!$is_edit || $m->marital_status === 'Single') ? 'selected' : '' ?>>Single</option>
                         <option value="Married" <?= ($is_edit && $m->marital_status === 'Married') ? 'selected' : '' ?>>Married</option>
                         <option value="Divorced" <?= ($is_edit && $m->marital_status === 'Divorced') ? 'selected' : '' ?>>Divorced</option>
@@ -217,9 +231,9 @@ if ($is_edit && !empty($m->card_number)) {
                     <span id="anniversaryBadge" class="text-[10px] text-slate-500 lowercase font-normal">(locked)</span>
                 </label>
                 <div class="relative">
-                    <input type="date" name="anniversary" id="anniversaryInput"
+                    <input type="date" name="anniversary" id="anniversaryInput" <?= $disabled_attr ?>
                         value="<?= $is_edit && !empty($m->anniversary) ? htmlspecialchars($m->anniversary) : '' ?>"
-                        class="w-full bg-[#111C38] border border-darkBorder rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition">
+                        class="w-full bg-[#111C38] border border-darkBorder rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
                 </div>
             </div>
         </div>
@@ -227,25 +241,40 @@ if ($is_edit && !empty($m->card_number)) {
         <!-- SECTION 5: Notes -->
         <div>
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Notes</label>
-            <textarea name="notes" rows="3" placeholder="Enter any specific preferences, remarks or membership notes"
-                class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"><?= $is_edit && !empty($m->notes) ? htmlspecialchars($m->notes) : '' ?></textarea>
+            <textarea name="notes" rows="3" placeholder="Enter any specific preferences, remarks or membership notes" <?= $disabled_attr ?>
+                class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>"><?= $is_edit && !empty($m->notes) ? htmlspecialchars($m->notes) : '' ?></textarea>
         </div>
 
         <!-- Action Buttons -->
         <div class="pt-4 border-t border-darkBorder/60 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase px-8 py-3 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2">
-                    <i class="fa-solid fa-check text-xs"></i> <?= $is_edit ? 'Update Member' : 'Save Member' ?>
-                </button>
+                <?php if (!$is_viewer): ?>
+                    <!-- Add / Update Submit Button (Hidden for Viewers) -->
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase px-8 py-3 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                        <i class="fa-solid fa-check text-xs"></i> <?= $is_edit ? 'Update Member' : 'Save Member' ?>
+                    </button>
+                <?php else: ?>
+                    <!-- Read-Only Badge for Viewers -->
+                    <span class="inline-flex items-center px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 border border-darkBorder cursor-not-allowed select-none">
+                        <i class="fa-solid fa-lock mr-2 text-xs text-slate-500"></i> Read Only Mode
+                    </span>
+                <?php endif; ?>
+
                 <a href="<?= base_url('main/members_list') ?>" class="bg-transparent hover:bg-slate-800 text-slate-300 font-semibold text-xs tracking-wider uppercase px-6 py-3 rounded-xl border border-darkBorder transition">
-                    Cancel
+                    <?= $is_viewer ? 'Back to Members' : 'Cancel' ?>
                 </a>
             </div>
 
-            <!-- Wireframe Hint -->
-            <span class="text-[11px] text-slate-500 italic hidden sm:inline-block">
-                * Fields marked with red are mandatory.
-            </span>
+            <!-- Information Hint -->
+            <?php if (!$is_viewer): ?>
+                <span class="text-[11px] text-slate-500 italic hidden sm:inline-block">
+                    * Fields marked with red are mandatory.
+                </span>
+            <?php else: ?>
+                <span class="text-[11px] text-amber-400/80 italic hidden sm:inline-block">
+                    <i class="fa-solid fa-circle-info mr-1"></i> You do not have permissions to modify records.
+                </span>
+            <?php endif; ?>
         </div>
 
     </form>
@@ -254,6 +283,8 @@ if ($is_edit && !empty($m->card_number)) {
 <!-- Interactive JS for Dynamic Card Prefixes & Marital Status -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const isViewer = <?= $is_viewer ? 'true' : 'false' ?>;
+
         const cardTypeSelect = document.getElementById('cardTypeSelect');
         const cardPrefixBadge = document.getElementById('cardPrefixBadge');
         const hiddenPrefix = document.getElementById('hiddenCardPrefix');
@@ -286,11 +317,8 @@ if ($is_edit && !empty($m->card_number)) {
             const selectedType = cardTypeSelect.value || 'Gold';
             const cfg = prefixMap[selectedType] || prefixMap['Gold'];
 
-            // Update badge text and value
             cardPrefixBadge.textContent = cfg.code;
             hiddenPrefix.value = cfg.code;
-
-            // Reset class stylings
             cardPrefixBadge.className = `px-3.5 py-2.5 ${cfg.bg} border ${cfg.border} ${cfg.text} font-mono text-xs rounded-xl font-bold select-none transition-all`;
 
             updatePreview();
@@ -302,10 +330,11 @@ if ($is_edit && !empty($m->card_number)) {
             previewDisplay.textContent = `${code}-${currentYear}-${suffix}`;
         }
 
-        cardTypeSelect.addEventListener('change', updateCardPrefix);
-        suffixInput.addEventListener('input', updatePreview);
+        if (!isViewer) {
+            cardTypeSelect.addEventListener('change', updateCardPrefix);
+            suffixInput.addEventListener('input', updatePreview);
+        }
 
-        // Initial trigger
         updateCardPrefix();
 
         // ----------------------------------------------------
@@ -316,6 +345,11 @@ if ($is_edit && !empty($m->card_number)) {
         const annivBadge = document.getElementById('anniversaryBadge');
 
         function toggleAnniversary() {
+            if (isViewer) {
+                annivInput.disabled = true;
+                return;
+            }
+
             if (maritalSelect.value === 'Married') {
                 annivInput.disabled = false;
                 annivInput.classList.remove('opacity-30', 'cursor-not-allowed');
@@ -323,7 +357,7 @@ if ($is_edit && !empty($m->card_number)) {
                 annivBadge.classList.replace('text-slate-500', 'text-blue-400');
             } else {
                 annivInput.disabled = true;
-                annivInput.value = ''; // Clear value if not married
+                annivInput.value = '';
                 annivInput.classList.add('opacity-30', 'cursor-not-allowed');
                 annivBadge.textContent = '(not married - locked)';
                 annivBadge.classList.replace('text-blue-400', 'text-slate-500');
@@ -331,6 +365,8 @@ if ($is_edit && !empty($m->card_number)) {
         }
 
         toggleAnniversary();
-        maritalSelect.addEventListener('change', toggleAnniversary);
+        if (!isViewer) {
+            maritalSelect.addEventListener('change', toggleAnniversary);
+        }
     });
 </script>

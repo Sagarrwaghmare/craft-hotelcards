@@ -17,6 +17,17 @@ class Main extends CI_Controller
         }
     }
 
+    // Role Guard: Restricts admin-only actions and views
+    private function _require_admin()
+    {
+        $role = strtolower(trim((string)$this->session->userdata('access')));
+        if ($role !== 'admin') {
+            $this->session->set_flashdata('error', 'Access denied: You do not have administrator permissions.');
+            redirect('main');
+            exit;
+        }
+    }
+
     public function view($member_id)
     {
         $this->load->model('Member_model');
@@ -38,8 +49,11 @@ class Main extends CI_Controller
         $this->members();
     }
 
+    // Admin only
     public function add_user()
     {
+        $this->_require_admin();
+
         $data['title']       = 'Add User';
         $data['active_menu'] = 'add_user';
 
@@ -56,8 +70,11 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
+    // Admin only
     public function save_user()
     {
+        $this->_require_admin();
+
         $this->load->model('User_model');
 
         $name       = trim((string)$this->input->post('name', TRUE));
@@ -78,7 +95,7 @@ class Main extends CI_Controller
         }
 
         if ($this->User_model->get_by_username($username)) {
-            $this->session->set_flashdata('error', "Username '{$username}' is already taken. Please pick another.");
+            $this->session->set_flashdata('error', "Username '{$username}' is already taken.");
             redirect('main/add_user');
             return;
         }
@@ -104,7 +121,7 @@ class Main extends CI_Controller
             $this->session->set_flashdata('success', "User '{$name}' created successfully!");
             redirect('main/users');
         } else {
-            $this->session->set_flashdata('error', 'Database error: Failed to create user. Please try again.');
+            $this->session->set_flashdata('error', 'Database error: Failed to create user.');
             redirect('main/add_user');
         }
     }
@@ -113,9 +130,9 @@ class Main extends CI_Controller
     {
         $this->load->model('Member_model');
 
-        $data['title']       = $id ? 'Edit Member' : 'Add Member';
+        $data['title'] = $id ? 'Edit Member' : 'Add Member';
         $data['active_menu'] = 'add_member';
-        $data['member']      = $id ? $this->Member_model->get_by_id($id) : null;
+        $data['member'] = $id ? $this->Member_model->get_by_id($id) : null;
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
@@ -126,6 +143,13 @@ class Main extends CI_Controller
 
     public function save_member($id = null)
     {
+        $role = strtolower(trim((string)$this->session->userdata('access')));
+        if ($role === 'viewer') {
+            $this->session->set_flashdata('error', 'Viewers cannot add or modify members.');
+            redirect('main/members_list');
+            return;
+        }
+
         $this->load->model('Member_model');
 
         $card_type   = $this->input->post('card_type', TRUE);
@@ -172,7 +196,7 @@ class Main extends CI_Controller
                 $this->session->set_flashdata('success', 'New member registered successfully!');
                 redirect('main/member_details/' . $new_id);
             } else {
-                $this->session->set_flashdata('error', 'Failed to register member. Please check input values.');
+                $this->session->set_flashdata('error', 'Failed to register member.');
                 redirect('main/add_member');
             }
         }
@@ -294,8 +318,11 @@ class Main extends CI_Controller
         exit;
     }
 
+    // Admin only
     public function users()
     {
+        $this->_require_admin();
+
         $this->load->model('User_model');
 
         $data['title']       = 'User Management';
@@ -310,8 +337,11 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
+    // Admin only
     public function update_user()
     {
+        $this->_require_admin();
+
         $this->load->model('User_model');
 
         $user_id = (int)$this->input->post('user_id', TRUE);
@@ -354,8 +384,11 @@ class Main extends CI_Controller
         redirect('main/users');
     }
 
+    // Admin only
     public function delete_users()
     {
+        $this->_require_admin();
+
         $this->load->model('User_model');
 
         $selected_ids = $this->input->post('selected_users');
@@ -405,6 +438,14 @@ class Main extends CI_Controller
 
     public function add_visit()
     {
+        // Viewers cannot log visits
+        $role = strtolower(trim((string)$this->session->userdata('access')));
+        if ($role === 'viewer') {
+            $this->session->set_flashdata('error', 'Viewers cannot add visits.');
+            redirect('main/members_list');
+            return;
+        }
+
         $member_id  = (int)$this->input->post('member_id', TRUE);
         $visit_date = $this->input->post('visit_date', TRUE);
         $raw_pax    = (int)($this->input->post('no_of_pax', TRUE) ?: $this->input->post('pax', TRUE));
@@ -435,13 +476,12 @@ class Main extends CI_Controller
         if ($inserted) {
             $this->session->set_flashdata('success', 'Visit details added successfully!');
         } else {
-            $this->session->set_flashdata('error', 'Failed to save visit details. Please try again.');
+            $this->session->set_flashdata('error', 'Failed to save visit details.');
         }
 
         redirect('main/member_details/' . $member_id);
     }
 
-    // Displays the current logged-in user profile
     public function profile()
     {
         $this->load->model('User_model');
@@ -463,7 +503,6 @@ class Main extends CI_Controller
 
         $data['is_admin'] = (strtolower($data['user']['access']) === 'admin');
 
-        // Placeholder avoids undefined array key warning
         if (!isset($data['user']['password'])) {
             $data['user']['password'] = '••••••••••••';
         }
@@ -475,7 +514,6 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    // Handles updating the logged-in user's own profile
     public function update_profile()
     {
         $this->load->model('User_model');
@@ -491,7 +529,6 @@ class Main extends CI_Controller
             return;
         }
 
-        // Ensure email isn't taken by someone else
         $existing = $this->User_model->get_by_email($email);
         if ($existing && (int)$existing['id'] !== $user_id) {
             $this->session->set_flashdata('error', "Email '{$email}' is already in use by another account.");
@@ -507,7 +544,6 @@ class Main extends CI_Controller
 
         $this->User_model->update($user_id, $update_data);
 
-        // Update active session data immediately
         $this->session->set_userdata([
             'name'       => $name,
             'email'      => $email,

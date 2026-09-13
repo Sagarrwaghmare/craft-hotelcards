@@ -1,5 +1,4 @@
 <?php
-// Helper variable for cleaner active/inactive styling
 $active_menu = isset($active_menu) ? $active_menu : '';
 
 function menu_class($current, $active)
@@ -9,6 +8,11 @@ function menu_class($current, $active)
     }
     return 'text-slate-400 hover:text-white hover:bg-slate-800/40 font-medium';
 }
+
+$user_access = strtolower(trim((string)$this->session->userdata('access')));
+$user_name   = $this->session->userdata('name') ?? 'Staff';
+$user_role   = $this->session->userdata('access') ?? 'Viewer';
+$initials    = strtoupper(substr($user_name, 0, 2));
 ?>
 
 <!-- Sidebar -->
@@ -48,36 +52,40 @@ function menu_class($current, $active)
                     <span>Members List</span>
                 </a>
 
-                <!-- Add Member -->
-                <a href="<?= base_url('main/add_member') ?>"
-                    class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition <?= menu_class('add_member', $active_menu) ?>">
-                    <i class="fa-solid fa-address-card w-4 text-center text-emerald-400"></i>
-                    <span>Add Member</span>
-                </a>
+                <!-- Add Member (Hidden for Viewers) -->
+                <?php if ($user_access !== 'viewer'): ?>
+                    <a href="<?= base_url('main/add_member') ?>"
+                        class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition <?= menu_class('add_member', $active_menu) ?>">
+                        <i class="fa-solid fa-address-card w-4 text-center text-emerald-400"></i>
+                        <span>Add Member</span>
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
 
-        <!-- SECTION: USER MANAGEMENT -->
-        <div>
-            <span class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">
-                System Access
-            </span>
-            <div class="space-y-1">
-                <!-- Users List -->
-                <a href="<?= base_url('main/users') ?>"
-                    class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition <?= menu_class('users', $active_menu) ?>">
-                    <i class="fa-solid fa-users-gear w-4 text-center text-amber-400"></i>
-                    <span>User Management</span>
-                </a>
+        <!-- SECTION: USER MANAGEMENT (Admin Only) -->
+        <?php if ($user_access === 'admin'): ?>
+            <div>
+                <span class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">
+                    System Access
+                </span>
+                <div class="space-y-1">
+                    <!-- Users List -->
+                    <a href="<?= base_url('main/users') ?>"
+                        class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition <?= menu_class('users', $active_menu) ?>">
+                        <i class="fa-solid fa-users-gear w-4 text-center text-amber-400"></i>
+                        <span>User Management</span>
+                    </a>
 
-                <!-- Add User -->
-                <a href="<?= base_url('main/add_user') ?>"
-                    class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition <?= menu_class('add_user', $active_menu) ?>">
-                    <i class="fa-solid fa-user-plus w-4 text-center text-sky-400"></i>
-                    <span>Add User</span>
-                </a>
+                    <!-- Add User -->
+                    <a href="<?= base_url('main/add_user') ?>"
+                        class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition <?= menu_class('add_user', $active_menu) ?>">
+                        <i class="fa-solid fa-user-plus w-4 text-center text-sky-400"></i>
+                        <span>Add User</span>
+                    </a>
+                </div>
             </div>
-        </div>
+        <?php endif; ?>
 
         <!-- SECTION: ACCOUNT & SETTINGS -->
         <div>
@@ -103,16 +111,18 @@ function menu_class($current, $active)
 
     </nav>
 
-    <!-- Bottom User Info & Logout -->
+    <!-- Bottom User Info & Logout (Dynamic from Session) -->
     <div class="p-3 border-t border-darkBorder/50 bg-[#080E1E]">
         <div class="flex items-center justify-between px-2 py-1.5 rounded-xl">
             <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-full bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs">
-                    JD
+                <div class="w-8 h-8 rounded-full bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs uppercase">
+                    <?= htmlspecialchars($initials) ?>
                 </div>
                 <div class="truncate">
-                    <p class="text-xs font-semibold text-white leading-tight">Jane Doe</p>
-                    <p class="text-[10px] text-slate-400">Admin</p>
+                    <p class="text-xs font-semibold text-white leading-tight truncate max-w-[120px]" title="<?= htmlspecialchars($user_name) ?>">
+                        <?= htmlspecialchars($user_name) ?>
+                    </p>
+                    <p class="text-[10px] text-slate-400"><?= htmlspecialchars($user_role) ?></p>
                 </div>
             </div>
             <!-- Logout Link -->
