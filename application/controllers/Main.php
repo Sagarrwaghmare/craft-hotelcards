@@ -9,6 +9,12 @@ class Main extends CI_Controller
         parent::__construct();
         $this->load->helper('url');
         $this->load->library('session');
+
+        // Route Guard: Require login for all dashboard access
+        if (!$this->session->userdata('logged_in')) {
+            $this->session->set_flashdata('error', 'Please log in to access the system.');
+            redirect('auth');
+        }
     }
 
     public function view($member_id)
@@ -32,7 +38,6 @@ class Main extends CI_Controller
         $this->members();
     }
 
-    // Show Add User Page
     public function add_user()
     {
         $data['title']       = 'Add User';
@@ -42,7 +47,6 @@ class Main extends CI_Controller
         $this->load->view('templates/sidebar', $data);
         $this->load->view('templates/navbar', $data);
 
-        // Supports both pages/add.php and templates/add.php
         if (file_exists(APPPATH . 'views/pages/add.php')) {
             $this->load->view('pages/add', $data);
         } else {
@@ -52,7 +56,6 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    // Save New User into Database
     public function save_user()
     {
         $this->load->model('User_model');
@@ -64,33 +67,28 @@ class Main extends CI_Controller
         $password   = $this->input->post('password', TRUE);
         $access     = ucfirst(strtolower(trim((string)$this->input->post('access', TRUE))));
 
-        // Basic Validation
         if (empty($name) || empty($username) || empty($email) || empty($password) || empty($access)) {
             $this->session->set_flashdata('error', 'Please fill in all mandatory fields.');
             redirect('main/add_user');
             return;
         }
 
-        // Validate Access Role matches DB Enum: 'Admin', 'Editor', 'Viewer'
         if (!in_array($access, ['Admin', 'Editor', 'Viewer'])) {
             $access = 'Viewer';
         }
 
-        // Check if username already exists
         if ($this->User_model->get_by_username($username)) {
             $this->session->set_flashdata('error', "Username '{$username}' is already taken. Please pick another.");
             redirect('main/add_user');
             return;
         }
 
-        // Check if email already exists
         if ($this->User_model->get_by_email($email)) {
             $this->session->set_flashdata('error', "Email '{$email}' is already registered.");
             redirect('main/add_user');
             return;
         }
 
-        // Prepare data with Bcrypt password hash
         $user_data = [
             'name'          => $name,
             'username'      => $username,
@@ -443,31 +441,29 @@ class Main extends CI_Controller
         redirect('main/member_details/' . $member_id);
     }
 
+    // Displays the current logged-in user profile
     public function profile()
     {
         $this->load->model('User_model');
 
         $data['title']       = 'My Profile';
         $data['active_menu'] = 'profile';
-        $data['is_admin']    = TRUE;
 
-        $current_id = $this->session->userdata('user_id');
+        $current_id = (int)$this->session->userdata('user_id');
         $db_user    = $current_id ? $this->User_model->get_by_id($current_id) : null;
 
-        if (!$db_user) {
-            $all = $this->User_model->get_all();
-            $db_user = !empty($all) ? $all[0] : null;
-        }
-
         $data['user'] = $db_user ?: [
-            'id'         => 1,
-            'name'       => 'Administrator',
-            'email'      => 'admin@hotelcards.local',
-            'contact_no' => '555-0100',
-            'username'   => 'admin',
-            'access'     => 'Admin'
+            'id'         => $current_id,
+            'name'       => $this->session->userdata('name') ?? 'User',
+            'email'      => $this->session->userdata('email') ?? '',
+            'contact_no' => $this->session->userdata('contact_no') ?? '',
+            'username'   => $this->session->userdata('username') ?? '',
+            'access'     => $this->session->userdata('access') ?? 'Viewer'
         ];
 
+        $data['is_admin'] = (strtolower($data['user']['access']) === 'admin');
+
+        // Placeholder avoids undefined array key warning
         if (!isset($data['user']['password'])) {
             $data['user']['password'] = '••••••••••••';
         }
@@ -477,5 +473,48 @@ class Main extends CI_Controller
         $this->load->view('templates/navbar', $data);
         $this->load->view('pages/profile', $data);
         $this->load->view('templates/footer', $data);
+    }
+
+    // Handles updating the logged-in user's own profile
+    public function update_profile()
+    {
+        $this->load->model('User_model');
+
+        $user_id    = (int)$this->session->userdata('user_id');
+        $name       = trim((string)$this->input->post('name', TRUE));
+        $email      = trim((string)$this->input->post('email', TRUE));
+        $contact_no = trim((string)$this->input->post('contact_no', TRUE));
+
+        if (empty($name) || empty($email)) {
+            $this->session->set_flashdata('error', 'Name and Email are required.');
+            redirect('main/profile');
+            return;
+        }
+
+        // Ensure email isn't taken by someone else
+        $existing = $this->User_model->get_by_email($email);
+        if ($existing && (int)$existing['id'] !== $user_id) {
+            $this->session->set_flashdata('error', "Email '{$email}' is already in use by another account.");
+            redirect('main/profile');
+            return;
+        }
+
+        $update_data = [
+            'name'       => $name,
+            'email'      => $email,
+            'contact_no' => !empty($contact_no) ? $contact_no : null
+        ];
+
+        $this->User_model->update($user_id, $update_data);
+
+        // Update active session data immediately
+        $this->session->set_userdata([
+            'name'       => $name,
+            'email'      => $email,
+            'contact_no' => $contact_no
+        ]);
+
+        $this->session->set_flashdata('success', 'Profile updated successfully!');
+        redirect('main/profile');
     }
 }
