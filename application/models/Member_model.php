@@ -29,7 +29,7 @@ class Member_model extends CI_Model
         return $query->row_array();
     }
 
-    // Count members by card type (Gold, Platinum, Silver)
+    // Count members by card type (Gold, Platinum)
     public function count_by_type($type)
     {
         return $this->db->where('card_type', $type)->count_all_results($this->table);
@@ -101,7 +101,31 @@ class Member_model extends CI_Model
         return array_slice($events, 0, $limit);
     }
 
-    // Apply filters helper for search, type, and date ranges
+    // Helper to sanitize MM-DD format from inputs
+    private function _extract_mmdd($val)
+    {
+        $val = trim((string)$val);
+        if (empty($val)) return null;
+
+        // If YYYY-MM-DD was passed
+        if (preg_match('/^\d{4}-(\d{2}-\d{2})$/', $val, $m)) {
+            return $m[1];
+        }
+
+        // If MM-DD (e.g. 05-15)
+        if (preg_match('/^(\d{1,2})-(\d{1,2})$/', $val, $m)) {
+            return sprintf('%02d-%02d', $m[1], $m[2]);
+        }
+
+        // If MM/DD (e.g. 05/15)
+        if (preg_match('/^(\d{1,2})\/(\d{1,2})$/', $val, $m)) {
+            return sprintf('%02d-%02d', $m[1], $m[2]);
+        }
+
+        return null;
+    }
+
+    // Apply filters helper (comparing only month & day for DOB and Anniversary)
     private function _apply_filters($filters = [])
     {
         if (!empty($filters['search'])) {
@@ -119,20 +143,45 @@ class Member_model extends CI_Model
             $this->db->where('card_type', $filters['type']);
         }
 
-        if (!empty($filters['dob_from'])) {
-            $this->db->where('dob >=', $filters['dob_from']);
+        // Month-Day matching for DOB (year-independent)
+        $dob_from = $this->_extract_mmdd($filters['dob_from'] ?? '');
+        $dob_to   = $this->_extract_mmdd($filters['dob_to'] ?? '');
+
+        if ($dob_from && $dob_to) {
+            if ($dob_from <= $dob_to) {
+                $this->db->where("DATE_FORMAT(dob, '%m-%d') >=", $dob_from);
+                $this->db->where("DATE_FORMAT(dob, '%m-%d') <=", $dob_to);
+            } else {
+                // Handles year-end wrap around (e.g., Dec to Jan)
+                $this->db->group_start();
+                $this->db->where("DATE_FORMAT(dob, '%m-%d') >=", $dob_from);
+                $this->db->or_where("DATE_FORMAT(dob, '%m-%d') <=", $dob_to);
+                $this->db->group_end();
+            }
+        } elseif ($dob_from) {
+            $this->db->where("DATE_FORMAT(dob, '%m-%d') >=", $dob_from);
+        } elseif ($dob_to) {
+            $this->db->where("DATE_FORMAT(dob, '%m-%d') <=", $dob_to);
         }
 
-        if (!empty($filters['dob_to'])) {
-            $this->db->where('dob <=', $filters['dob_to']);
-        }
+        // Month-Day matching for Anniversary (year-independent)
+        $anniv_from = $this->_extract_mmdd($filters['anniv_from'] ?? '');
+        $anniv_to   = $this->_extract_mmdd($filters['anniv_to'] ?? '');
 
-        if (!empty($filters['anniv_from'])) {
-            $this->db->where('anniversary >=', $filters['anniv_from']);
-        }
-
-        if (!empty($filters['anniv_to'])) {
-            $this->db->where('anniversary <=', $filters['anniv_to']);
+        if ($anniv_from && $anniv_to) {
+            if ($anniv_from <= $anniv_to) {
+                $this->db->where("DATE_FORMAT(anniversary, '%m-%d') >=", $anniv_from);
+                $this->db->where("DATE_FORMAT(anniversary, '%m-%d') <=", $anniv_to);
+            } else {
+                $this->db->group_start();
+                $this->db->where("DATE_FORMAT(anniversary, '%m-%d') >=", $anniv_from);
+                $this->db->or_where("DATE_FORMAT(anniversary, '%m-%d') <=", $anniv_to);
+                $this->db->group_end();
+            }
+        } elseif ($anniv_from) {
+            $this->db->where("DATE_FORMAT(anniversary, '%m-%d') >=", $anniv_from);
+        } elseif ($anniv_to) {
+            $this->db->where("DATE_FORMAT(anniversary, '%m-%d') <=", $anniv_to);
         }
     }
 
@@ -181,9 +230,27 @@ class Member_model extends CI_Model
         return $this->db->update($this->table, $data);
     }
 
+    public function update_batch_fields($ids, $data)
+    {
+        if (empty($ids) || !is_array($ids) || empty($data)) {
+            return false;
+        }
+        $this->db->where_in('id', $ids);
+        return $this->db->update($this->table, $data);
+    }
+
     public function delete($id)
     {
         $this->db->where('id', $id);
+        return $this->db->delete($this->table);
+    }
+
+    public function delete_batch_ids($ids)
+    {
+        if (empty($ids) || !is_array($ids)) {
+            return false;
+        }
+        $this->db->where_in('id', $ids);
         return $this->db->delete($this->table);
     }
 

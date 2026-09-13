@@ -11,8 +11,8 @@ if ($is_edit && !empty($m->card_number)) {
 }
 
 // Role Check: Check if currently logged in user is a Viewer
-$current_role = strtolower(trim((string)$this->session->userdata('access')));
-$is_viewer    = ($current_role === 'viewer');
+$current_role  = strtolower(trim((string)$this->session->userdata('access')));
+$is_viewer     = ($current_role === 'viewer');
 $disabled_attr = $is_viewer ? 'disabled' : '';
 ?>
 
@@ -59,7 +59,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
         <!-- SECTION 1: Membership Card Details -->
         <div class="p-4 bg-[#0A1020] border border-darkBorder rounded-xl grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
 
-            <!-- Card Type -->
+            <!-- Card Type (Gold / Platinum only) -->
             <div class="mb-5">
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
                     Card Type <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
@@ -72,7 +72,6 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
                         class="w-full bg-[#111C38] border border-darkBorder rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition appearance-none cursor-pointer <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
                         <option value="Gold" <?= ($is_edit && $m->card_type === 'Gold') ? 'selected' : (!isset($m) ? 'selected' : '') ?>>Gold (Prefix 666)</option>
                         <option value="Platinum" <?= ($is_edit && $m->card_type === 'Platinum') ? 'selected' : '' ?>>Platinum (Prefix 999)</option>
-                        <option value="Silver" <?= ($is_edit && $m->card_type === 'Silver') ? 'selected' : '' ?>>Silver (Prefix 333)</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
                         <i class="fa-solid fa-chevron-down text-xs"></i>
@@ -90,7 +89,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
                     <input type="hidden" name="card_prefix" id="hiddenCardPrefix" value="666">
                     <input type="hidden" name="card_year" id="hiddenCardYear" value="<?= date('Y') ?>">
 
-                    <!-- Dynamic Card Type Prefix Badge (666 for Gold, 999 for Platinum, 333 for Silver) -->
+                    <!-- Dynamic Card Type Prefix Badge (666 for Gold, 999 for Platinum) -->
                     <span id="cardPrefixBadge"
                         class="px-3.5 py-2.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono text-xs rounded-xl font-bold select-none transition-all">
                         666
@@ -98,7 +97,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
 
                     <!-- Unchangeable Current Year Badge -->
                     <span id="cardYearBadge"
-                        class="px-3.5 py-2.5 bg-slate-800/80 border border-slate-700 text-blue-400 font-mono text-xs rounded-xl font-bold select-none"
+                        class="px-3 py-2.5 bg-slate-800/80 border border-slate-700 text-blue-400 font-mono text-xs rounded-xl font-bold select-none"
                         title="Current Registration Year">
                         <?= date('Y') ?>
                     </span>
@@ -165,7 +164,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
                     </div>
                     <input type="tel" name="contact_no" required placeholder="Enter contact number" <?= $disabled_attr ?>
                         value="<?= $is_edit && !empty($m->contact_no) ? htmlspecialchars($m->contact_no) : '' ?>"
-                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition font-mono <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
+                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
                 </div>
             </div>
 
@@ -180,7 +179,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
                     </div>
                     <input type="email" name="email" required placeholder="Enter email address" <?= $disabled_attr ?>
                         value="<?= $is_edit && !empty($m->email) ? htmlspecialchars($m->email) : '' ?>"
-                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
+                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
                 </div>
             </div>
         </div>
@@ -224,7 +223,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
                 </div>
             </div>
 
-            <!-- Anniversary (Disabled if not Married) -->
+            <!-- Anniversary -->
             <div id="anniversaryContainer">
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
                     <span>Anniversary</span>
@@ -249,12 +248,10 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
         <div class="pt-4 border-t border-darkBorder/60 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <?php if (!$is_viewer): ?>
-                    <!-- Add / Update Submit Button (Hidden for Viewers) -->
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase px-8 py-3 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2">
                         <i class="fa-solid fa-check text-xs"></i> <?= $is_edit ? 'Update Member' : 'Save Member' ?>
                     </button>
                 <?php else: ?>
-                    <!-- Read-Only Badge for Viewers -->
                     <span class="inline-flex items-center px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 border border-darkBorder cursor-not-allowed select-none">
                         <i class="fa-solid fa-lock mr-2 text-xs text-slate-500"></i> Read Only Mode
                     </span>
@@ -292,6 +289,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
         const suffixInput = document.getElementById('cardSuffixInput');
         const previewDisplay = document.getElementById('cardPreview');
 
+        // Only Gold and Platinum
         const prefixMap = {
             'Gold': {
                 code: '666',
@@ -304,12 +302,6 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
                 border: 'border-slate-400/30',
                 bg: 'bg-slate-400/10',
                 text: 'text-slate-200'
-            },
-            'Silver': {
-                code: '333',
-                border: 'border-blue-400/30',
-                bg: 'bg-blue-500/10',
-                text: 'text-blue-300'
             }
         };
 

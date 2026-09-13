@@ -49,7 +49,6 @@ class Main extends CI_Controller
         $this->members();
     }
 
-    // Admin only
     public function add_user()
     {
         $this->_require_admin();
@@ -70,7 +69,6 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    // Admin only
     public function save_user()
     {
         $this->_require_admin();
@@ -130,9 +128,9 @@ class Main extends CI_Controller
     {
         $this->load->model('Member_model');
 
-        $data['title'] = $id ? 'Edit Member' : 'Add Member';
+        $data['title']       = $id ? 'Edit Member' : 'Add Member';
         $data['active_menu'] = 'add_member';
-        $data['member'] = $id ? $this->Member_model->get_by_id($id) : null;
+        $data['member']      = $id ? $this->Member_model->get_by_id($id) : null;
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
@@ -202,6 +200,95 @@ class Main extends CI_Controller
         }
     }
 
+    // Bulk update common operational fields across multiple members (Only Gold & Platinum)
+    public function bulk_update_members()
+    {
+        $role = strtolower(trim((string)$this->session->userdata('access')));
+        if ($role === 'viewer') {
+            $this->session->set_flashdata('error', 'Viewers cannot modify member records.');
+            redirect('main/members_list');
+            return;
+        }
+
+        $this->load->model('Member_model');
+
+        $ids_string = $this->input->post('bulk_member_ids', TRUE);
+        $ids = array_filter(array_map('intval', explode(',', $ids_string)));
+
+        if (empty($ids)) {
+            $this->session->set_flashdata('error', 'No members were selected for bulk update.');
+            redirect('main/members_list');
+            return;
+        }
+
+        $update_data = [];
+
+        // Only Gold and Platinum
+        $card_type = $this->input->post('bulk_card_type', TRUE);
+        if (!empty($card_type) && in_array($card_type, ['Gold', 'Platinum'])) {
+            $update_data['card_type'] = $card_type;
+        }
+
+        // Company Name
+        $company_name = trim((string)$this->input->post('bulk_company_name', TRUE));
+        if ($this->input->post('apply_company', TRUE) === '1') {
+            $update_data['company_name'] = !empty($company_name) ? $company_name : null;
+        }
+
+        // Designation
+        $designation = trim((string)$this->input->post('bulk_designation', TRUE));
+        if ($this->input->post('apply_designation', TRUE) === '1') {
+            $update_data['designation'] = !empty($designation) ? $designation : null;
+        }
+
+        // Marital Status
+        $marital_status = $this->input->post('bulk_marital_status', TRUE);
+        if (!empty($marital_status) && in_array($marital_status, ['Single', 'Married', 'Divorced', 'Widowed', 'Other'])) {
+            $update_data['marital_status'] = $marital_status;
+        }
+
+        // Notes
+        $notes = trim((string)$this->input->post('bulk_notes', TRUE));
+        if ($this->input->post('apply_notes', TRUE) === '1') {
+            $update_data['notes'] = !empty($notes) ? $notes : null;
+        }
+
+        if (empty($update_data)) {
+            $this->session->set_flashdata('error', 'No change options were selected for the bulk update.');
+            redirect('main/members_list');
+            return;
+        }
+
+        $this->Member_model->update_batch_fields($ids, $update_data);
+        $this->session->set_flashdata('success', count($ids) . ' member(s) updated successfully.');
+
+        redirect('main/members_list');
+    }
+
+    public function delete_members()
+    {
+        $this->_require_admin();
+
+        $this->load->model('Member_model');
+
+        $selected_ids = $this->input->post('selected_members');
+
+        if (!empty($selected_ids) && is_array($selected_ids)) {
+            $sanitized_ids = array_map('intval', $selected_ids);
+            $deleted = $this->Member_model->delete_batch_ids($sanitized_ids);
+
+            if ($deleted) {
+                $this->session->set_flashdata('success', count($sanitized_ids) . ' member(s) deleted successfully.');
+            } else {
+                $this->session->set_flashdata('error', 'Failed to delete selected members.');
+            }
+        } else {
+            $this->session->set_flashdata('error', 'No members were selected for deletion.');
+        }
+
+        redirect('main/members_list');
+    }
+
     public function members()
     {
         $this->load->model('Member_model');
@@ -222,7 +309,6 @@ class Main extends CI_Controller
     public function members_list()
     {
         $this->load->model('Member_model');
-        $this->load->library('pagination');
 
         $data['title']       = 'Members Directory';
         $data['active_menu'] = 'members_list';
@@ -237,7 +323,9 @@ class Main extends CI_Controller
         ];
 
         $total_rows   = $this->Member_model->count_filtered_members($filters);
-        $per_page     = 15;
+
+        // Default pagination: 10 rows per page
+        $per_page     = 10;
         $current_page = max(1, (int)$this->input->get('page'));
         $offset       = ($current_page - 1) * $per_page;
 
@@ -318,7 +406,6 @@ class Main extends CI_Controller
         exit;
     }
 
-    // Admin only
     public function users()
     {
         $this->_require_admin();
@@ -337,7 +424,6 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    // Admin only
     public function update_user()
     {
         $this->_require_admin();
@@ -384,7 +470,6 @@ class Main extends CI_Controller
         redirect('main/users');
     }
 
-    // Admin only
     public function delete_users()
     {
         $this->_require_admin();
@@ -438,7 +523,6 @@ class Main extends CI_Controller
 
     public function add_visit()
     {
-        // Viewers cannot log visits
         $role = strtolower(trim((string)$this->session->userdata('access')));
         if ($role === 'viewer') {
             $this->session->set_flashdata('error', 'Viewers cannot add visits.');
