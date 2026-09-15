@@ -24,15 +24,15 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
         </div>
         <div>
             <span class="text-[11px] font-bold text-blue-400 tracking-wider uppercase">Club Membership</span>
-            <h2 class="text-2xl font-bold text-white tracking-tight">
+            <h2 class="text-2xl font-bold text-white tracking-tight page-title">
                 <?= $is_edit ? 'Edit Member Details' : 'Add Member' ?>
             </h2>
-            <p class="text-xs text-slate-400">
+            <p class="text-xs text-slate-400 page-subtitle">
                 <?= $is_viewer ? 'Viewing member information in read-only mode.' : 'Fill in the required credentials and personal information.' ?>
             </p>
         </div>
     </div>
-    <a href="<?= base_url('main/members_list') ?>" class="text-xs text-slate-300 border border-darkBorder px-3.5 py-2 rounded-lg hover:bg-slate-800 transition flex items-center gap-2">
+    <a href="<?= base_url('main/members_list') ?>" class="back-btn text-xs text-slate-300 border border-darkBorder px-3.5 py-2 rounded-xl hover:bg-slate-800 transition flex items-center gap-2 shadow-sm">
         <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Members
     </a>
 </div>
@@ -57,11 +57,11 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
     <form action="<?= base_url('main/save_member' . ($is_edit ? '/' . $m->id : '')) ?>" method="POST" id="memberForm" class="space-y-6">
 
         <!-- SECTION 1: Membership Card Details -->
-        <div class="p-4 bg-[#0A1020] border border-darkBorder rounded-xl grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
+        <div class="p-5 bg-[#0A1020] border border-darkBorder rounded-xl grid grid-cols-1 md:grid-cols-2 gap-5 items-center section-box">
 
             <!-- Card Type (Gold / Platinum only) -->
-            <div class="mb-5">
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                     Card Type <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
                 <div class="relative">
@@ -81,23 +81,23 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
 
             <!-- Card Number with Dynamic Type Prefix & Year Badge -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                     Card Number <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2.5">
                     <!-- Hidden fields submitted with form -->
                     <input type="hidden" name="card_prefix" id="hiddenCardPrefix" value="666">
                     <input type="hidden" name="card_year" id="hiddenCardYear" value="<?= date('Y') ?>">
 
                     <!-- Dynamic Card Type Prefix Badge (666 for Gold, 999 for Platinum) -->
                     <span id="cardPrefixBadge"
-                        class="px-3.5 py-2.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono text-xs rounded-xl font-bold select-none transition-all">
+                        class="card-prefix-badge badge-gold px-3.5 py-2.5 font-mono text-xs rounded-xl font-bold select-none transition-all shadow-sm">
                         666
                     </span>
 
                     <!-- Unchangeable Current Year Badge -->
                     <span id="cardYearBadge"
-                        class="px-3 py-2.5 bg-slate-800/80 border border-slate-700 text-blue-400 font-mono text-xs rounded-xl font-bold select-none"
+                        class="card-year-badge px-3.5 py-2.5 font-mono text-xs rounded-xl font-bold select-none shadow-sm"
                         title="Current Registration Year">
                         <?= date('Y') ?>
                     </span>
@@ -107,7 +107,9 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
                         value="<?= htmlspecialchars($existing_suffix) ?>" <?= $disabled_attr ?>
                         class="flex-1 bg-[#111C38] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
                 </div>
-                <span class="text-[11px] text-slate-500 mt-1 block">Full Card No Preview: <strong id="cardPreview" class="text-slate-300 font-mono">666-<?= date('Y') ?>-XXXX</strong></span>
+                <span class="text-[11px] text-slate-500 mt-1.5 block preview-label">
+                    Full Card No Preview: <strong id="cardPreview" class="text-slate-200 font-mono">666-<?= date('Y') ?>-XXXX</strong>
+                </span>
             </div>
         </div>
 
@@ -115,7 +117,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <!-- First Name -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                     First Name <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
                 <input type="text" name="first_name" required placeholder="Enter first name" <?= $disabled_attr ?>
@@ -125,7 +127,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
 
             <!-- Last Name -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                     Last Name <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
                 <input type="text" name="last_name" required placeholder="Enter last name" <?= $disabled_attr ?>
@@ -135,7 +137,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
 
             <!-- Company Name -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                     Company Name
                 </label>
                 <input type="text" name="company_name" placeholder="Enter company name" <?= $disabled_attr ?>
@@ -145,7 +147,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
 
             <!-- Designation -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                     Designation
                 </label>
                 <input type="text" name="designation" placeholder="e.g. Senior Manager" <?= $disabled_attr ?>
@@ -155,7 +157,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
 
             <!-- Contact No -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                     Contact No <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
                 <div class="relative">
@@ -170,7 +172,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
 
             <!-- Email Id -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                     Email ID <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
                 <div class="relative">
@@ -186,16 +188,16 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
 
         <!-- SECTION 3: Address -->
         <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Address</label>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">Address</label>
             <textarea name="address" rows="2" placeholder="Enter complete residential or office address" <?= $disabled_attr ?>
                 class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>"><?= $is_edit && !empty($m->address) ? htmlspecialchars($m->address) : '' ?></textarea>
         </div>
 
         <!-- SECTION 4: DOB, Marital Status & Anniversary -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 p-4 bg-[#0A1020] border border-darkBorder rounded-xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 p-5 bg-[#0A1020] border border-darkBorder rounded-xl section-box">
             <!-- Date of Birth (DOB) -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                     Date of Birth (DOB) <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
                 <input type="date" name="dob" required <?= $disabled_attr ?>
@@ -205,7 +207,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
 
             <!-- Marital Status -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                     Marital Status
                 </label>
                 <div class="relative">
@@ -225,7 +227,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
 
             <!-- Anniversary -->
             <div id="anniversaryContainer">
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between form-label">
                     <span>Anniversary</span>
                     <span id="anniversaryBadge" class="text-[10px] text-slate-500 lowercase font-normal">(locked)</span>
                 </label>
@@ -239,36 +241,42 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
 
         <!-- SECTION 5: Notes -->
         <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Notes</label>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">Notes</label>
             <textarea name="notes" rows="3" placeholder="Enter any specific preferences, remarks or membership notes" <?= $disabled_attr ?>
                 class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>"><?= $is_edit && !empty($m->notes) ? htmlspecialchars($m->notes) : '' ?></textarea>
         </div>
 
         <!-- Action Buttons -->
-        <div class="pt-4 border-t border-darkBorder/60 flex items-center justify-between">
+        <div class="pt-5 border-t border-darkBorder/60 flex items-center justify-between action-footer">
             <div class="flex items-center gap-3">
                 <?php if (!$is_viewer): ?>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase px-8 py-3 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2">
-                        <i class="fa-solid fa-check text-xs"></i> <?= $is_edit ? 'Update Member' : 'Save Member' ?>
+                    <!-- High-contrast Save/Update Member Button -->
+                    <button type="submit"
+                        class="save-member-btn bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase px-8 py-3 rounded-xl transition shadow-lg shadow-blue-600/25 active:scale-[0.99] flex items-center gap-2">
+                        <i class="fa-solid fa-check text-xs"></i>
+                        <span><?= $is_edit ? 'Update Member' : 'Save Member' ?></span>
                     </button>
                 <?php else: ?>
+                    <!-- Read-Only Badge for Viewers -->
                     <span class="inline-flex items-center px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 border border-darkBorder cursor-not-allowed select-none">
                         <i class="fa-solid fa-lock mr-2 text-xs text-slate-500"></i> Read Only Mode
                     </span>
                 <?php endif; ?>
 
-                <a href="<?= base_url('main/members_list') ?>" class="bg-transparent hover:bg-slate-800 text-slate-300 font-semibold text-xs tracking-wider uppercase px-6 py-3 rounded-xl border border-darkBorder transition">
+                <!-- Cancel Button -->
+                <a href="<?= base_url('main/members_list') ?>"
+                    class="cancel-btn bg-transparent hover:bg-slate-800 text-slate-300 font-semibold text-xs tracking-wider uppercase px-6 py-3 rounded-xl border border-darkBorder transition shadow-sm">
                     <?= $is_viewer ? 'Back to Members' : 'Cancel' ?>
                 </a>
             </div>
 
             <!-- Information Hint -->
             <?php if (!$is_viewer): ?>
-                <span class="text-[11px] text-slate-500 italic hidden sm:inline-block">
+                <span class="text-[11px] text-slate-500 italic hidden sm:inline-block hint-text">
                     * Fields marked with red are mandatory.
                 </span>
             <?php else: ?>
-                <span class="text-[11px] text-amber-400/80 italic hidden sm:inline-block">
+                <span class="text-[11px] text-amber-500/90 italic hidden sm:inline-block">
                     <i class="fa-solid fa-circle-info mr-1"></i> You do not have permissions to modify records.
                 </span>
             <?php endif; ?>
@@ -276,6 +284,108 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
 
     </form>
 </div>
+
+<!-- Scoped Light Mode Adjustments for Add/Edit Member Screen -->
+<style>
+    /* Default (Dark Mode) Badge Colors */
+    .card-prefix-badge.badge-gold {
+        background-color: rgba(245, 158, 11, 0.12);
+        border: 1px solid rgba(245, 158, 11, 0.35);
+        color: #fbbf24;
+    }
+
+    .card-prefix-badge.badge-platinum {
+        background-color: rgba(148, 163, 184, 0.15);
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        color: #e2e8f0;
+    }
+
+    .card-year-badge {
+        background-color: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(51, 65, 85, 0.9);
+        color: #60a5fa;
+    }
+
+    /* Light Mode Overrides */
+    html.light .page-title {
+        color: #0f172a !important;
+    }
+
+    html.light .page-subtitle {
+        color: #64748b !important;
+    }
+
+    html.light .form-label {
+        color: #334155 !important;
+    }
+
+    html.light .hint-text {
+        color: #64748b !important;
+    }
+
+    html.light .preview-label {
+        color: #64748b !important;
+    }
+
+    html.light #cardPreview {
+        color: #0f172a !important;
+    }
+
+    /* 666 / 999 Badges in Light Mode */
+    html.light .card-prefix-badge.badge-gold {
+        background-color: #fef3c7 !important;
+        border: 1px solid #fcd34d !important;
+        color: #b45309 !important;
+        /* Deep, legible amber */
+    }
+
+    html.light .card-prefix-badge.badge-platinum {
+        background-color: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #334155 !important;
+        /* Dark legible slate */
+    }
+
+    /* Year Badge in Light Mode */
+    html.light .card-year-badge {
+        background-color: #eff6ff !important;
+        border: 1px solid #bfdbfe !important;
+        color: #1d4ed8 !important;
+        /* Crisp blue text */
+    }
+
+    /* Action Buttons in Light Mode */
+    html.light .save-member-btn {
+        background-color: #2563eb !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    html.light .save-member-btn:hover {
+        background-color: #1d4ed8 !important;
+    }
+
+    html.light .cancel-btn,
+    html.light .back-btn {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+
+    html.light .cancel-btn:hover,
+    html.light .back-btn:hover {
+        background-color: #f8fafc !important;
+        border-color: #94a3b8 !important;
+        color: #0f172a !important;
+    }
+
+    /* Section Sub-Boxes in Light Mode */
+    html.light .section-box {
+        background-color: #f8fafc !important;
+        border-color: #e2e8f0 !important;
+    }
+</style>
 
 <!-- Interactive JS for Dynamic Card Prefixes & Marital Status -->
 <script>
@@ -289,29 +399,18 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
         const suffixInput = document.getElementById('cardSuffixInput');
         const previewDisplay = document.getElementById('cardPreview');
 
-        // Only Gold and Platinum
-        const prefixMap = {
-            'Gold': {
-                code: '666',
-                border: 'border-amber-500/30',
-                bg: 'bg-amber-500/10',
-                text: 'text-amber-400'
-            },
-            'Platinum': {
-                code: '999',
-                border: 'border-slate-400/30',
-                bg: 'bg-slate-400/10',
-                text: 'text-slate-200'
-            }
-        };
-
         function updateCardPrefix() {
             const selectedType = cardTypeSelect.value || 'Gold';
-            const cfg = prefixMap[selectedType] || prefixMap['Gold'];
 
-            cardPrefixBadge.textContent = cfg.code;
-            hiddenPrefix.value = cfg.code;
-            cardPrefixBadge.className = `px-3.5 py-2.5 ${cfg.bg} border ${cfg.border} ${cfg.text} font-mono text-xs rounded-xl font-bold select-none transition-all`;
+            if (selectedType === 'Gold') {
+                cardPrefixBadge.textContent = '666';
+                hiddenPrefix.value = '666';
+                cardPrefixBadge.className = 'card-prefix-badge badge-gold px-3.5 py-2.5 font-mono text-xs rounded-xl font-bold select-none transition-all shadow-sm';
+            } else {
+                cardPrefixBadge.textContent = '999';
+                hiddenPrefix.value = '999';
+                cardPrefixBadge.className = 'card-prefix-badge badge-platinum px-3.5 py-2.5 font-mono text-xs rounded-xl font-bold select-none transition-all shadow-sm';
+            }
 
             updatePreview();
         }
@@ -327,6 +426,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
             suffixInput.addEventListener('input', updatePreview);
         }
 
+        // Initialize state
         updateCardPrefix();
 
         // ----------------------------------------------------

@@ -6,12 +6,14 @@
         </div>
         <div>
             <span class="text-[11px] font-bold text-blue-400 tracking-wider uppercase">Administration</span>
-            <h2 class="text-2xl font-bold text-white tracking-tight">User Management</h2>
-            <p class="text-xs text-slate-400">View, assign roles, and manage internal system access.</p>
+            <h2 class="text-2xl font-bold text-white tracking-tight page-title">User Management</h2>
+            <p class="text-xs text-slate-400 page-subtitle">View, assign roles, and manage internal system access.</p>
         </div>
     </div>
 
-    <a href="<?= base_url('main/add_user') ?>" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-4 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2 self-start sm:self-auto">
+    <!-- Top Add User Button -->
+    <a href="<?= base_url('main/add_user') ?>"
+        class="btn-add-user bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-4 py-2.5 rounded-xl transition shadow-md shadow-blue-600/25 flex items-center gap-2 self-start sm:self-auto active:scale-[0.98]">
         <i class="fa-solid fa-user-plus text-xs"></i> Add User
     </a>
 </div>
@@ -19,13 +21,13 @@
 <!-- Flash Alerts -->
 <?php if ($this->session->flashdata('success')): ?>
     <div class="max-w-5xl mx-auto mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-3">
-        <i class="fa-solid fa-circle-check text-sm"></i>
+        <i class="fa-solid fa-circle-check text-sm shrink-0"></i>
         <span><?= $this->session->flashdata('success') ?></span>
     </div>
 <?php endif; ?>
 <?php if ($this->session->flashdata('error')): ?>
     <div class="max-w-5xl mx-auto mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-3">
-        <i class="fa-solid fa-circle-exclamation text-sm"></i>
+        <i class="fa-solid fa-circle-exclamation text-sm shrink-0"></i>
         <span><?= $this->session->flashdata('error') ?></span>
     </div>
 <?php endif; ?>
@@ -35,20 +37,20 @@
     <div class="bg-darkCard border border-darkBorder rounded-2xl shadow-xl overflow-hidden max-w-5xl mx-auto">
 
         <!-- Table Sub-header -->
-        <div class="px-6 py-4 border-b border-darkBorder bg-[#0A1020] flex items-center justify-between">
+        <div class="px-6 py-4 border-b border-darkBorder bg-[#0A1020] flex items-center justify-between table-subhead">
             <div class="flex items-center gap-2.5">
                 <i class="fa-solid fa-table-list text-blue-400 text-sm"></i>
-                <h3 class="text-sm font-bold text-white tracking-wide">Registered Users</h3>
+                <h3 class="text-sm font-bold text-white tracking-wide subhead-title">Registered Users</h3>
             </div>
-            <span class="text-xs text-slate-400 font-mono">
-                Total Records: <strong class="text-white"><?= isset($total_count) ? $total_count : count($users ?? []) ?></strong>
+            <span class="text-xs text-slate-400 font-mono subhead-counter">
+                Total Records: <strong class="text-white subhead-count"><?= isset($total_count) ? $total_count : count($users ?? []) ?></strong>
             </span>
         </div>
 
         <!-- Table Responsive Wrapper -->
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-300">
-                <thead class="text-[11px] uppercase tracking-wider text-slate-400 bg-slate-900/70 border-b border-darkBorder font-bold">
+                <thead class="users-table-head text-[11px] uppercase tracking-wider text-slate-400 bg-slate-900/70 border-b border-darkBorder font-bold">
                     <tr>
                         <!-- Select All Checkbox -->
                         <th scope="col" class="py-3.5 px-5 w-20 text-center">
@@ -103,24 +105,24 @@
                                 </td>
 
                                 <!-- Sr.No. -->
-                                <td class="py-4 px-4 text-center font-mono text-xs text-slate-500">
+                                <td class="py-4 px-4 text-center font-mono text-xs text-slate-500 user-sr">
                                     <?= $sr_offset + $index + 1 ?>
                                 </td>
 
                                 <!-- User (Name + Email + Username) -->
-                                <td class="py-4 px-6 text-white font-medium">
+                                <td class="py-4 px-6 font-medium">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-[#0A1020] border border-darkBorder flex items-center justify-center text-slate-300 font-bold text-xs shrink-0 uppercase">
+                                        <div class="user-avatar-badge w-8 h-8 rounded-full bg-[#0A1020] border border-darkBorder flex items-center justify-center text-slate-300 font-bold text-xs shrink-0 uppercase shadow-sm">
                                             <?= substr($u['name'], 0, 1) ?>
                                         </div>
                                         <div>
                                             <div class="flex items-center gap-2">
-                                                <span class="font-semibold text-white"><?= htmlspecialchars($u['name']) ?></span>
+                                                <span class="user-name font-semibold text-white"><?= htmlspecialchars($u['name']) ?></span>
                                                 <?php if (!empty($u['username'])): ?>
-                                                    <span class="text-[11px] font-mono text-slate-400">@<?= htmlspecialchars($u['username']) ?></span>
+                                                    <span class="user-username text-[11px] font-mono text-slate-400">@<?= htmlspecialchars($u['username']) ?></span>
                                                 <?php endif; ?>
                                             </div>
-                                            <span class="text-xs text-slate-400 font-mono"><?= htmlspecialchars($u['email']) ?></span>
+                                            <span class="user-email text-xs text-slate-400 font-mono"><?= htmlspecialchars($u['email']) ?></span>
                                         </div>
                                     </div>
                                 </td>
@@ -156,8 +158,8 @@
             $baseQuery = http_build_query($queryParams);
             $queryPrefix = !empty($baseQuery) ? '?' . $baseQuery . '&page=' : '?page=';
             ?>
-            <div class="px-6 py-4 border-t border-darkBorder bg-[#0A1020] flex items-center justify-between">
-                <span class="text-xs text-slate-500">
+            <div id="usersPaginationBar" class="px-6 py-4 border-t border-darkBorder bg-[#0A1020] flex items-center justify-between">
+                <span class="text-xs text-slate-500" id="usersPageInfo">
                     Showing page <strong class="text-slate-300"><?= $current_page ?></strong> of <strong class="text-slate-300"><?= $total_pages ?></strong> (10 records/page)
                 </span>
 
@@ -189,19 +191,22 @@
         <?php endif; ?>
 
         <!-- Bottom Action Buttons: Add User, Edit, Delete -->
-        <div class="p-6 bg-[#0A1020] border-t border-darkBorder flex items-center justify-center gap-3">
+        <div class="p-6 bg-[#0A1020] border-t border-darkBorder flex items-center justify-center gap-3 users-action-footer">
+            <!-- Add User Button -->
             <a href="<?= base_url('main/add_user') ?>"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-6 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                class="btn-add-user bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-6 py-2.5 rounded-xl transition shadow-md shadow-blue-600/25 flex items-center gap-2 active:scale-[0.98]">
                 <i class="fa-solid fa-plus text-xs"></i> Add User
             </a>
 
+            <!-- Edit Selected Button -->
             <button type="button" id="editSelectedBtn"
-                class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold text-xs tracking-wider uppercase px-6 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2">
+                class="action-btn-edit bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold text-xs tracking-wider uppercase px-6 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-sm">
                 <i class="fa-regular fa-pen-to-square text-xs"></i> Edit
             </button>
 
+            <!-- Delete Selected Button -->
             <button type="button" id="deleteSelectedBtn"
-                class="bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold text-xs tracking-wider uppercase px-6 py-2.5 rounded-xl border border-red-500/30 transition flex items-center gap-2">
+                class="action-btn-delete bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold text-xs tracking-wider uppercase px-6 py-2.5 rounded-xl border border-red-500/30 transition flex items-center gap-2 shadow-sm">
                 <i class="fa-regular fa-trash-can text-xs"></i> Delete
             </button>
         </div>
@@ -299,6 +304,110 @@
     </div>
 </div>
 
+<!-- Scoped Light Mode Theme Styles for Users List -->
+<style>
+    /* Table Header in Light Mode */
+    html.light .users-table-head {
+        background-color: #f1f5f9 !important;
+        border-bottom-color: #e2e8f0 !important;
+    }
+
+    html.light .users-table-head th {
+        color: #334155 !important;
+        background-color: #f1f5f9 !important;
+    }
+
+    /* Subhead and Text Colors */
+    html.light .page-title,
+    html.light .subhead-title,
+    html.light .user-name {
+        color: #0f172a !important;
+    }
+
+    html.light .page-subtitle,
+    html.light .subhead-counter,
+    html.light .user-sr,
+    html.light .user-username,
+    html.light .user-email {
+        color: #64748b !important;
+    }
+
+    html.light .subhead-count {
+        color: #0f172a !important;
+    }
+
+    /* User Avatar Circle Badge in Light Mode */
+    html.light .user-avatar-badge {
+        background-color: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+        color: #1e293b !important;
+    }
+
+    /* Both Add User Buttons (Top & Bottom) in Light Mode */
+    html.light .btn-add-user {
+        background-color: #2563eb !important;
+        color: #ffffff !important;
+        border: 1px solid #2563eb !important;
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    html.light .btn-add-user:hover {
+        background-color: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+
+    /* Edit Button in Light Mode (Clean White Card Button) */
+    html.light .action-btn-edit {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+
+    html.light .action-btn-edit:hover {
+        background-color: #f8fafc !important;
+        border-color: #94a3b8 !important;
+        color: #0f172a !important;
+    }
+
+    /* Delete Button in Light Mode (Readable Crimson Red) */
+    html.light .action-btn-delete {
+        background-color: #fef2f2 !important;
+        color: #dc2626 !important;
+        border: 1px solid #fecaca !important;
+        box-shadow: 0 1px 2px 0 rgba(220, 38, 38, 0.05) !important;
+    }
+
+    html.light .action-btn-delete:hover {
+        background-color: #fee2e2 !important;
+        border-color: #fca5a5 !important;
+        color: #b91c1c !important;
+    }
+
+    /* Pagination in Light Mode */
+    html.light #usersPaginationBar {
+        background-color: #ffffff !important;
+        border-top-color: #e2e8f0 !important;
+    }
+
+    html.light #usersPageInfo {
+        color: #64748b !important;
+    }
+
+    html.light #usersPageInfo strong {
+        color: #0f172a !important;
+    }
+
+    html.light #usersPaginationBar nav a {
+        color: #475569 !important;
+    }
+
+    html.light #usersPaginationBar nav a:hover {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+    }
+</style>
+
 <!-- Scripts for Selection & Modal Logic -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -333,6 +442,7 @@
             if (e.target === modal) closeModal();
         });
 
+        // Master select/unselect all
         if (selectAll) {
             selectAll.addEventListener('change', function() {
                 rowCheckboxes.forEach(cb => {
@@ -342,6 +452,7 @@
             });
         }
 
+        // Row checkbox toggle
         rowCheckboxes.forEach(cb => {
             cb.addEventListener('change', function() {
                 toggleRowHighlight(this);
@@ -360,7 +471,7 @@
             }
         }
 
-        // Edit button click
+        // Edit button click: opens modal and loads data
         document.getElementById('editSelectedBtn').addEventListener('click', function() {
             const checked = document.querySelectorAll('.row-checkbox:checked');
             if (checked.length === 0) {

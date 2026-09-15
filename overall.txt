@@ -60,3 +60,4 @@ lets see:
     white and dark mode 
     font size increase 
     exports do good pdf and csv
+    make calendars filter look good...

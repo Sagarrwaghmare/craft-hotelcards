@@ -6,8 +6,8 @@
         </div>
         <div>
             <span class="text-[11px] font-bold text-blue-400 tracking-wider uppercase">Account Settings</span>
-            <h2 class="text-2xl font-bold text-white tracking-tight">User Profile Management</h2>
-            <p class="text-xs text-slate-400">Manage account credentials, permissions, and security settings.</p>
+            <h2 class="text-2xl font-bold text-white tracking-tight profile-title">User Profile Management</h2>
+            <p class="text-xs text-slate-400 profile-subtitle">Manage account credentials, permissions, and security settings.</p>
         </div>
     </div>
 
@@ -48,17 +48,17 @@
 <div class="bg-darkCard border border-darkBorder rounded-2xl shadow-xl max-w-3xl mx-auto overflow-hidden">
 
     <!-- Card Header Banner -->
-    <div class="p-6 bg-[#0A1020] border-b border-darkBorder flex flex-col sm:flex-row items-center gap-4">
+    <div class="p-6 bg-[#0A1020] border-b border-darkBorder flex flex-col sm:flex-row items-center gap-4 profile-card-header">
         <!-- User Avatar Initial -->
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-blue-500/20 shrink-0">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-blue-500/25 shrink-0">
             <?= strtoupper(substr($user['name'], 0, 2)) ?>
         </div>
         <div class="text-center sm:text-left">
-            <h3 class="text-lg font-bold text-white"><?= htmlspecialchars($user['name']) ?></h3>
+            <h3 class="text-lg font-bold text-white profile-user-name"><?= htmlspecialchars($user['name']) ?></h3>
             <p class="text-xs text-slate-400 font-mono">@<?= htmlspecialchars($user['username']) ?></p>
             <div class="mt-1 flex items-center justify-center sm:justify-start gap-2">
                 <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-[11px] text-slate-300">Active Profile</span>
+                <span class="text-[11px] text-slate-300 profile-status">Active Profile</span>
             </div>
         </div>
     </div>
@@ -70,25 +70,25 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <!-- Name -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Name</label>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">Name</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                         <i class="fa-regular fa-user text-sm"></i>
                     </div>
                     <input type="text" value="<?= htmlspecialchars($user['name']) ?>" readonly
-                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none cursor-default">
+                        class="profile-input w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none cursor-default">
                 </div>
             </div>
 
             <!-- Email -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Email</label>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">Email</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                         <i class="fa-solid fa-at text-sm"></i>
                     </div>
                     <input type="email" value="<?= htmlspecialchars($user['email']) ?>" readonly
-                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none cursor-default">
+                        class="profile-input w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none cursor-default">
                 </div>
             </div>
         </div>
@@ -97,40 +97,40 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <!-- Contact No -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Contact No.</label>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">Contact No.</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                         <i class="fa-solid fa-phone text-xs"></i>
                     </div>
                     <input type="text" value="<?= !empty($user['contact_no']) ? htmlspecialchars($user['contact_no']) : 'Not provided' ?>" readonly
-                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 font-mono focus:outline-none cursor-default">
+                        class="profile-input w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 font-mono focus:outline-none cursor-default">
                 </div>
             </div>
 
             <!-- Username -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Username</label>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">Username</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                         <i class="fa-regular fa-id-badge text-sm"></i>
                     </div>
                     <input type="text" value="<?= htmlspecialchars($user['username']) ?>" readonly
-                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 font-mono focus:outline-none cursor-default">
+                        class="profile-input w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 font-mono focus:outline-none cursor-default">
                 </div>
             </div>
         </div>
 
         <!-- Row 3: Password & Access Level -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <!-- Password Placeholder (Resolved warning) -->
+            <!-- Password Placeholder -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Password</label>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">Password</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                         <i class="fa-solid fa-lock text-sm"></i>
                     </div>
                     <input type="password" id="profilePassword" value="••••••••••••" readonly
-                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-400 tracking-widest focus:outline-none cursor-default">
+                        class="profile-input w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-400 tracking-widest focus:outline-none cursor-default">
                     <button type="button" id="toggleProfilePass" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 focus:outline-none">
                         <i class="fa-regular fa-eye-slash text-sm" id="toggleProfilePassIcon"></i>
                     </button>
@@ -139,34 +139,34 @@
 
             <!-- Access Level -->
             <div>
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Access</label>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">Access</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                         <i class="fa-solid fa-user-shield text-sm text-blue-400"></i>
                     </div>
                     <input type="text" value="<?= htmlspecialchars($user['access']) ?>" readonly
-                        class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 font-semibold focus:outline-none cursor-default">
+                        class="profile-input w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 font-semibold focus:outline-none cursor-default">
                 </div>
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="pt-6 border-t border-darkBorder/60 flex flex-wrap items-center justify-center sm:justify-start gap-3">
+        <!-- Action Buttons (Restyled for high contrast in light & dark) -->
+        <div class="pt-6 border-t border-darkBorder/60 flex flex-wrap items-center justify-center sm:justify-start gap-3 profile-actions-bar">
             <!-- Edit Profile Button (Opens Modal) -->
             <button type="button" id="openEditProfileModalBtn"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                class="btn-edit-profile bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl transition shadow-md shadow-blue-600/25 flex items-center gap-2 active:scale-[0.98]">
                 <i class="fa-regular fa-pen-to-square text-xs"></i> Edit Profile
             </button>
 
-            <!-- Reset Password Button -->
+            <!-- Change Password Button -->
             <a href="<?= base_url('auth/reset_password') ?>"
-                class="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2">
+                class="btn-change-password bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-sm">
                 <i class="fa-solid fa-key text-xs"></i> Change Password
             </a>
 
-            <!-- Sign Out -->
+            <!-- Sign Out Button -->
             <a href="<?= base_url('auth/logout') ?>"
-                class="bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold text-xs tracking-wider uppercase px-4 py-2.5 rounded-xl border border-red-500/30 transition flex items-center gap-2">
+                class="btn-profile-logout bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold text-xs tracking-wider uppercase px-4 py-2.5 rounded-xl border border-red-500/30 transition flex items-center gap-2 shadow-sm">
                 <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i> Logout
             </a>
         </div>
@@ -213,11 +213,11 @@
 
             <div class="pt-4 border-t border-darkBorder flex items-center justify-end gap-3">
                 <button type="button" id="closeProfileModalBtn"
-                    class="bg-transparent hover:bg-slate-800 text-slate-300 text-xs font-semibold uppercase tracking-wider px-5 py-2.5 rounded-xl border border-darkBorder transition">
+                    class="modal-cancel-btn bg-transparent hover:bg-slate-800 text-slate-300 text-xs font-semibold uppercase tracking-wider px-5 py-2.5 rounded-xl border border-darkBorder transition">
                     Cancel
                 </button>
                 <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold uppercase tracking-wider px-6 py-2.5 rounded-xl shadow-lg shadow-blue-600/20 transition">
+                    class="modal-save-btn bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold uppercase tracking-wider px-6 py-2.5 rounded-xl shadow-lg shadow-blue-600/20 transition">
                     Save Changes
                 </button>
             </div>
@@ -225,6 +225,85 @@
 
     </div>
 </div>
+
+<!-- Scoped Light Mode Theme Styles for Profile -->
+<style>
+    /* Titles & Subtitles */
+    html.light .profile-title,
+    html.light .profile-user-name {
+        color: #0f172a !important;
+    }
+
+    html.light .profile-subtitle,
+    html.light .form-label,
+    html.light .profile-status {
+        color: #64748b !important;
+    }
+
+    /* Profile Inputs in Light Mode */
+    html.light .profile-input {
+        background-color: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    html.light #profilePassword {
+        color: #475569 !important;
+    }
+
+    /* Edit Profile Button (Solid Primary Blue) */
+    html.light .btn-edit-profile {
+        background-color: #2563eb !important;
+        color: #ffffff !important;
+        border: 1px solid #2563eb !important;
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    html.light .btn-edit-profile:hover {
+        background-color: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+
+    /* Change Password Button in Light Mode (Clean White Card Button) */
+    html.light .btn-change-password {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+
+    html.light .btn-change-password:hover {
+        background-color: #f8fafc !important;
+        border-color: #94a3b8 !important;
+        color: #0f172a !important;
+    }
+
+    /* Logout Button in Light Mode (Readable Crimson Red) */
+    html.light .btn-profile-logout {
+        background-color: #fef2f2 !important;
+        color: #dc2626 !important;
+        border: 1px solid #fecaca !important;
+        box-shadow: 0 1px 2px 0 rgba(220, 38, 38, 0.05) !important;
+    }
+
+    html.light .btn-profile-logout:hover {
+        background-color: #fee2e2 !important;
+        border-color: #fca5a5 !important;
+        color: #b91c1c !important;
+    }
+
+    /* Modal Buttons in Light Mode */
+    html.light .modal-cancel-btn {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    html.light .modal-cancel-btn:hover {
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
+    }
+</style>
 
 <!-- Scripts for peek and profile modal -->
 <script>

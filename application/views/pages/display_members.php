@@ -1,3 +1,9 @@
+<?php
+// Role and permission check
+$user_role = strtolower(trim((string)$this->session->userdata('access')));
+$is_viewer = ($user_role === 'viewer');
+?>
+
 <!-- Header Title -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
     <div class="flex items-center gap-3">
@@ -6,14 +12,19 @@
         </div>
         <div>
             <span class="text-[11px] font-bold text-blue-400 tracking-wider uppercase">Analytics & Outreach</span>
-            <h2 class="text-2xl font-bold text-white tracking-tight">Membership and Events Overview</h2>
-            <p class="text-xs text-slate-400">Track upcoming member birthdays, anniversaries, and connect directly via WhatsApp.</p>
+            <h2 class="text-2xl font-bold text-white tracking-tight page-title">Membership and Events Overview</h2>
+            <p class="text-xs text-slate-400 page-subtitle">Track upcoming member birthdays, anniversaries, and connect directly via WhatsApp.</p>
         </div>
     </div>
 
-    <a href="<?= base_url('main/add_member') ?>" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-4 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2 self-start sm:self-auto">
-        <i class="fa-solid fa-user-plus text-xs"></i> Add Member
-    </a>
+    <!-- Add Member Button (Hidden for Viewers, High-contrast styling) -->
+    <?php if (!$is_viewer): ?>
+        <a href="<?= base_url('main/add_member') ?>"
+            class="btn-add-member bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase px-4 py-2.5 rounded-xl transition shadow-md shadow-blue-600/25 flex items-center gap-2 self-start sm:self-auto active:scale-[0.98]">
+            <i class="fa-solid fa-user-plus text-xs"></i>
+            <span>Add Member</span>
+        </a>
+    <?php endif; ?>
 </div>
 
 <!-- SECTION 1: Stat Summary Cards (Toggle Filters) -->
@@ -65,23 +76,23 @@
 <div class="bg-darkCard border border-darkBorder rounded-2xl shadow-xl overflow-hidden">
 
     <!-- Table Header Bar -->
-    <div class="px-6 py-4 border-b border-darkBorder flex items-center justify-between bg-[#0A1020]">
+    <div class="px-6 py-4 border-b border-darkBorder flex items-center justify-between bg-[#0A1020] table-subhead">
         <div class="flex items-center gap-2">
             <i class="fa-solid fa-bullhorn text-blue-400 text-sm"></i>
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Upcoming Events Schedule</h3>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider subhead-title">Upcoming Events Schedule</h3>
         </div>
         <div class="flex items-center gap-3">
             <span id="filter-reset-btn" onclick="resetFilters()" class="hidden text-xs text-blue-400 hover:text-blue-300 cursor-pointer underline">
                 Clear Filter
             </span>
-            <span class="text-xs text-slate-400">Total upcoming: <strong id="visible-count" class="text-slate-200"><?= count($events ?? []) ?> events</strong></span>
+            <span class="text-xs text-slate-400 subhead-counter">Total upcoming: <strong id="visible-count" class="text-slate-200 subhead-count"><?= count($events ?? []) ?> events</strong></span>
         </div>
     </div>
 
     <!-- Responsive Table -->
     <div class="overflow-x-auto">
         <table class="w-full text-left text-sm text-slate-300" id="eventsTable">
-            <thead class="text-[11px] uppercase tracking-wider text-slate-400 bg-slate-900/60 border-b border-darkBorder font-semibold">
+            <thead class="events-table-head text-[11px] uppercase tracking-wider text-slate-400 bg-slate-900/60 border-b border-darkBorder font-semibold">
                 <tr>
                     <th scope="col" class="py-3.5 px-6">Member</th>
                     <th scope="col" class="py-3.5 px-6">Subscription Type</th>
@@ -116,16 +127,16 @@
                             data-date="<?= htmlspecialchars($row['date'], ENT_QUOTES) ?>"
                             data-days="<?= htmlspecialchars($daysText, ENT_QUOTES) ?>">
 
-                            <!-- Member Name -->
+                            <!-- Member Name & Clean Avatar -->
                             <td class="py-4 px-6 font-semibold text-white">
                                 <div class="flex items-center gap-3">
-                                    <span class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300">
+                                    <span class="member-avatar w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 shrink-0">
                                         <?= strtoupper(substr($row['name'], 0, 1)) ?>
                                     </span>
                                     <div>
-                                        <span><?= htmlspecialchars($row['name']) ?></span>
+                                        <span class="row-name font-semibold text-white"><?= htmlspecialchars($row['name']) ?></span>
                                         <?php if (!empty($row['contact_no'])): ?>
-                                            <div class="text-[11px] font-normal text-slate-400 font-mono"><?= htmlspecialchars($row['contact_no']) ?></div>
+                                            <div class="row-phone text-[11px] font-normal text-slate-400 font-mono"><?= htmlspecialchars($row['contact_no']) ?></div>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -134,11 +145,11 @@
                             <!-- Card Type Badge (Gold / Platinum only) -->
                             <td class="py-4 px-6">
                                 <?php if (strtolower($row['type']) === 'gold'): ?>
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/30">
                                         <i class="fa-solid fa-crown text-[10px] mr-1.5"></i> Gold
                                     </span>
                                 <?php else: ?>
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-400/10 text-slate-300 border border-slate-400/30">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-400/15 text-slate-300 border border-slate-400/30">
                                         <i class="fa-solid fa-gem text-[10px] mr-1.5"></i> Platinum
                                     </span>
                                 <?php endif; ?>
@@ -147,11 +158,11 @@
                             <!-- Event Badge -->
                             <td class="py-4 px-6">
                                 <?php if (strtolower($row['event']) === 'birthday'): ?>
-                                    <span class="inline-flex items-center gap-2 text-xs font-medium text-pink-300">
+                                    <span class="inline-flex items-center gap-2 text-xs font-medium text-pink-400">
                                         <span class="text-base leading-none">🎂</span> Birthday
                                     </span>
                                 <?php else: ?>
-                                    <span class="inline-flex items-center gap-2 text-xs font-medium text-sky-300">
+                                    <span class="inline-flex items-center gap-2 text-xs font-medium text-sky-400">
                                         <span class="text-base leading-none">💍</span> Anniversary
                                     </span>
                                 <?php endif; ?>
@@ -159,17 +170,17 @@
 
                             <!-- Date -->
                             <td class="py-4 px-6 font-mono text-xs text-slate-300">
-                                <div><?= htmlspecialchars($row['date']) ?></div>
-                                <span class="text-[10px] text-slate-500"><?= $daysText ?></span>
+                                <div class="row-date"><?= htmlspecialchars($row['date']) ?></div>
+                                <span class="row-days text-[10px] text-slate-500"><?= $daysText ?></span>
                             </td>
 
-                            <!-- WhatsApp Link -->
+                            <!-- WhatsApp Link (High contrast in both light & dark) -->
                             <td class="py-4 px-6 text-center">
                                 <?php if (!empty($clean_phone)): ?>
                                     <a href="<?= $wa_url ?>"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="inline-flex items-center gap-1.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 hover:border-emerald-500 text-xs font-semibold px-3.5 py-1.5 rounded-lg transition shadow-sm">
+                                        class="wa-btn inline-flex items-center gap-1.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 hover:border-emerald-500 text-xs font-semibold px-3.5 py-1.5 rounded-lg transition shadow-sm">
                                         <i class="fa-brands fa-whatsapp text-sm"></i> Connect
                                     </a>
                                 <?php else: ?>
@@ -197,7 +208,7 @@
 
     <!-- Export Action Footer -->
     <div class="p-6 bg-[#0A1020] border-t border-darkBorder flex justify-center">
-        <button type="button" onclick="openExportModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs tracking-wider uppercase px-8 py-3 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-lg hover:border-blue-500/50">
+        <button type="button" onclick="openExportModal()" class="export-btn bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs tracking-wider uppercase px-8 py-3 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-lg hover:border-blue-500/50">
             <i class="fa-solid fa-file-arrow-down text-sm text-blue-400"></i> Export Schedule
         </button>
     </div>
@@ -253,6 +264,22 @@
     </div>
 
 </div>
+
+<!-- Scoped Light Mode Adjustments for Dashboard -->
+<style>
+    /* Top Add Member Button in Light Mode */
+    html.light .btn-add-member {
+        background-color: #2563eb !important;
+        color: #ffffff !important;
+        border: 1px solid #2563eb !important;
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    html.light .btn-add-member:hover {
+        background-color: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+</style>
 
 <!-- JavaScript: Toggle Filtering + 10-Row Pagination -->
 <script>
@@ -369,7 +396,6 @@
         }
     }
 
-    // Initialize pagination on load
     document.addEventListener('DOMContentLoaded', function() {
         applyFilterAndPagination();
     });
@@ -398,7 +424,6 @@
         if (e.key === 'Escape') closeExportModal();
     });
 
-    // 1. EXPORT TO CSV (Exports all matching events under current filter)
     function exportToCSV() {
         closeExportModal();
 
@@ -440,7 +465,6 @@
         URL.revokeObjectURL(url);
     }
 
-    // 2. EXPORT TO PDF
     function exportToPDF() {
         closeExportModal();
 

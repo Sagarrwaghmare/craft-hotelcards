@@ -6,11 +6,11 @@
         </div>
         <div>
             <span class="text-[11px] font-bold text-blue-400 tracking-wider uppercase">User Management</span>
-            <h2 class="text-2xl font-bold text-white tracking-tight">New User Details</h2>
-            <p class="text-xs text-slate-400">Fill in the information below to create a new user account.</p>
+            <h2 class="text-2xl font-bold text-white tracking-tight page-title">New User Details</h2>
+            <p class="text-xs text-slate-400 page-subtitle">Fill in the information below to create a new user account.</p>
         </div>
     </div>
-    <a href="<?= base_url('main/users') ?>" class="text-xs text-slate-300 border border-darkBorder px-3.5 py-2 rounded-lg hover:bg-slate-800 transition flex items-center gap-2">
+    <a href="<?= base_url('main/users') ?>" class="back-btn text-xs text-slate-300 border border-darkBorder px-3.5 py-2 rounded-xl hover:bg-slate-800 transition flex items-center gap-2 shadow-sm">
         <i class="fa-solid fa-arrow-left text-[10px]"></i> Back to Users
     </a>
 </div>
@@ -34,7 +34,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <!-- Name Field -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                         Full Name <span class="text-red-400">*</span>
                     </label>
                     <div class="relative">
@@ -48,7 +48,7 @@
 
                 <!-- Username Field -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                         Username <span class="text-red-400">*</span>
                     </label>
                     <div class="relative">
@@ -65,7 +65,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <!-- Email Field -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                         Email Address <span class="text-red-400">*</span>
                     </label>
                     <div class="relative">
@@ -79,7 +79,7 @@
 
                 <!-- Contact No Field -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                         Contact Number
                     </label>
                     <div class="relative">
@@ -96,7 +96,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <!-- Password Field with Toggle Eye -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                         Password <span class="text-red-400">*</span>
                     </label>
                     <div class="relative">
@@ -114,7 +114,7 @@
 
                 <!-- Access / Role Select (Matches DB enum: Admin, Editor, Viewer) -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                         Access Level <span class="text-red-400">*</span>
                     </label>
                     <div class="relative">
@@ -137,10 +137,16 @@
 
             <!-- Action Buttons -->
             <div class="pt-6 border-t border-darkBorder/60 flex items-center gap-3">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-6 py-3 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2">
-                    <i class="fa-solid fa-plus text-xs"></i> Save User
+                <!-- High-contrast Save User Button -->
+                <button type="submit"
+                    class="btn-save-user bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase px-8 py-3 rounded-xl transition shadow-lg shadow-blue-600/25 flex items-center gap-2 active:scale-[0.99]">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Save User</span>
                 </button>
-                <a href="<?= base_url('main/users') ?>" class="bg-transparent hover:bg-slate-800/80 text-slate-300 font-semibold text-xs tracking-wider uppercase px-6 py-3 rounded-xl border border-darkBorder transition">
+
+                <!-- Cancel Button -->
+                <a href="<?= base_url('main/users') ?>"
+                    class="cancel-btn bg-transparent hover:bg-slate-800 text-slate-300 font-semibold text-xs tracking-wider uppercase px-6 py-3 rounded-xl border border-darkBorder transition shadow-sm">
                     Cancel
                 </a>
             </div>
@@ -151,37 +157,88 @@
     <div class="bg-darkCard border border-darkBorder rounded-2xl p-6 shadow-xl h-fit">
         <div class="flex items-center gap-2 mb-4 pb-3 border-b border-darkBorder/60">
             <i class="fa-solid fa-layer-group text-blue-400"></i>
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Role Permissions</h3>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider card-title">Role Permissions</h3>
         </div>
 
         <ul class="space-y-4">
-            <li class="p-3 bg-[#0A1020] border border-darkBorder rounded-xl">
+            <li class="permission-box p-3 bg-[#0A1020] border border-darkBorder rounded-xl transition">
                 <div class="flex items-center gap-2 mb-1">
                     <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                    <h4 class="text-xs font-bold text-white uppercase">Admin</h4>
+                    <h4 class="text-xs font-bold text-white uppercase permission-role">Admin</h4>
                 </div>
-                <p class="text-[11px] text-slate-400 leading-relaxed">Complete system control, role assignment, and user deletion privileges.</p>
+                <p class="text-[11px] text-slate-400 leading-relaxed permission-desc">Complete system control, role assignment, and user deletion privileges.</p>
             </li>
 
-            <li class="p-3 bg-[#0A1020] border border-darkBorder rounded-xl">
+            <li class="permission-box p-3 bg-[#0A1020] border border-darkBorder rounded-xl transition">
                 <div class="flex items-center gap-2 mb-1">
                     <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                    <h4 class="text-xs font-bold text-white uppercase">Editor</h4>
+                    <h4 class="text-xs font-bold text-white uppercase permission-role">Editor</h4>
                 </div>
-                <p class="text-[11px] text-slate-400 leading-relaxed">Can add and edit regular records, but cannot manage other users or system settings.</p>
+                <p class="text-[11px] text-slate-400 leading-relaxed permission-desc">Can add and edit regular records, but cannot manage other users or system settings.</p>
             </li>
 
-            <li class="p-3 bg-[#0A1020] border border-darkBorder rounded-xl">
+            <li class="permission-box p-3 bg-[#0A1020] border border-darkBorder rounded-xl transition">
                 <div class="flex items-center gap-2 mb-1">
                     <span class="w-2 h-2 rounded-full bg-slate-400"></span>
-                    <h4 class="text-xs font-bold text-white uppercase">Viewer</h4>
+                    <h4 class="text-xs font-bold text-white uppercase permission-role">Viewer</h4>
                 </div>
-                <p class="text-[11px] text-slate-400 leading-relaxed">Read-only access across the dashboard with export privileges.</p>
+                <p class="text-[11px] text-slate-400 leading-relaxed permission-desc">Read-only access across the dashboard with export privileges.</p>
             </li>
         </ul>
     </div>
 
 </div>
+
+<!-- Scoped Light Mode Theme Adjustments for Add User -->
+<style>
+    /* Titles & Labels in Light Mode */
+    html.light .page-title,
+    html.light .card-title,
+    html.light .permission-role {
+        color: #0f172a !important;
+    }
+
+    html.light .page-subtitle,
+    html.light .form-label,
+    html.light .permission-desc {
+        color: #64748b !important;
+    }
+
+    /* Save User Button */
+    html.light .btn-save-user {
+        background-color: #2563eb !important;
+        color: #ffffff !important;
+        border: 1px solid #2563eb !important;
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    html.light .btn-save-user:hover {
+        background-color: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+
+    /* Cancel & Back Buttons */
+    html.light .cancel-btn,
+    html.light .back-btn {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+
+    html.light .cancel-btn:hover,
+    html.light .back-btn:hover {
+        background-color: #f8fafc !important;
+        border-color: #94a3b8 !important;
+        color: #0f172a !important;
+    }
+
+    /* Permission Info Cards in Light Mode */
+    html.light .permission-box {
+        background-color: #f8fafc !important;
+        border-color: #e2e8f0 !important;
+    }
+</style>
 
 <!-- Password Eye Toggle Script -->
 <script>

@@ -23,7 +23,7 @@ $can_delete = $is_admin;
     </div>
 
     <!-- Quick Count Badge -->
-    <div class="flex items-center gap-2 bg-darkCard border border-darkBorder px-4 py-2 rounded-xl text-xs text-slate-300 self-start sm:self-auto">
+    <div class="flex items-center gap-2 bg-darkCard border border-darkBorder px-4 py-2 rounded-xl text-xs text-slate-300 self-start sm:self-auto shadow-sm">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         Total Records: <strong class="text-white font-bold"><?= isset($total_count) ? $total_count : 0 ?></strong>
     </div>
@@ -56,7 +56,7 @@ $can_delete = $is_admin;
                 </div>
                 <input type="text" name="search" placeholder="Name, Card No, Phone..."
                     value="<?= htmlspecialchars($this->input->get('search') ?? '') ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
             </div>
         </div>
 
@@ -64,7 +64,7 @@ $can_delete = $is_admin;
         <div class="xl:col-span-2">
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Card Type</label>
             <div class="relative">
-                <select name="type" class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition appearance-none cursor-pointer">
+                <select name="type" class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition appearance-none cursor-pointer">
                     <option value="">All Types</option>
                     <option value="Gold" <?= ($this->input->get('type') === 'Gold') ? 'selected' : '' ?>>Gold</option>
                     <option value="Platinum" <?= ($this->input->get('type') === 'Platinum') ? 'selected' : '' ?>>Platinum</option>
@@ -75,7 +75,7 @@ $can_delete = $is_admin;
             </div>
         </div>
 
-        <!-- DOB Range (Month & Day Only: MM-DD) -->
+        <!-- DOB Range (Month & Day: MM-DD) -->
         <div class="xl:col-span-3">
             <div class="flex items-center justify-between mb-2">
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">DOB Range</label>
@@ -84,14 +84,14 @@ $can_delete = $is_admin;
             <div class="grid grid-cols-2 gap-2">
                 <input type="text" name="dob_from" placeholder="From 01-15" maxlength="5"
                     value="<?= htmlspecialchars($this->input->get('dob_from') ?? '') ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono">
+                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono">
                 <input type="text" name="dob_to" placeholder="To 12-31" maxlength="5"
                     value="<?= htmlspecialchars($this->input->get('dob_to') ?? '') ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono">
+                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono">
             </div>
         </div>
 
-        <!-- Anniversary Range (Month & Day Only: MM-DD) -->
+        <!-- Anniversary Range (Month & Day: MM-DD) -->
         <div class="xl:col-span-3">
             <div class="flex items-center justify-between mb-2">
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Anniversary Range</label>
@@ -100,21 +100,23 @@ $can_delete = $is_admin;
             <div class="grid grid-cols-2 gap-2">
                 <input type="text" name="anniv_from" placeholder="From 01-15" maxlength="5"
                     value="<?= htmlspecialchars($this->input->get('anniv_from') ?? '') ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono">
+                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono">
                 <input type="text" name="anniv_to" placeholder="To 12-31" maxlength="5"
                     value="<?= htmlspecialchars($this->input->get('anniv_to') ?? '') ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono">
+                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono">
             </div>
         </div>
 
-        <!-- Action Buttons (Filter & Clear) -->
+        <!-- Action Buttons (Solid Blue Filter CTA + Reset) -->
         <div class="xl:col-span-1 flex items-center gap-1.5">
-            <button type="submit" title="Apply Filter" class="flex-1 bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white font-semibold text-xs py-2 px-2.5 rounded-xl border border-darkBorder hover:border-blue-500 transition flex items-center justify-center gap-1 shadow-md">
+            <button type="submit" title="Apply Filter"
+                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl border border-blue-600 hover:border-blue-700 transition flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/25 active:scale-[0.98]">
                 <i class="fa-solid fa-filter text-[10px]"></i>
                 <span>Filter</span>
             </button>
             <?php if (!empty(array_filter($this->input->get() ?? []))): ?>
-                <a href="<?= base_url('main/members_list') ?>" title="Reset Filters" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 p-2 rounded-xl transition text-xs flex items-center justify-center">
+                <a href="<?= base_url('main/members_list') ?>" title="Reset Filters"
+                    class="reset-filter-btn bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-darkBorder p-2.5 rounded-xl transition text-xs flex items-center justify-center">
                     <i class="fa-solid fa-rotate-left"></i>
                 </a>
             <?php endif; ?>
@@ -129,7 +131,7 @@ $can_delete = $is_admin;
 
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-300">
-                <thead class="text-[11px] uppercase tracking-wider text-slate-400 bg-[#0A1020] border-b border-darkBorder font-bold">
+                <thead class="members-table-head text-[11px] uppercase tracking-wider text-slate-400 bg-[#0A1020] border-b border-darkBorder font-bold">
                     <tr>
                         <!-- Select All Checkbox (Admin & Editor only) -->
                         <?php if ($can_edit || $can_delete): ?>
@@ -185,39 +187,39 @@ $can_delete = $is_admin;
 
                                 <!-- Member Name & Contact -->
                                 <td class="py-3.5 px-6 font-semibold text-white">
-                                    <div><?= htmlspecialchars($full_name) ?></div>
+                                    <div class="row-name font-semibold text-white"><?= htmlspecialchars($full_name) ?></div>
                                     <?php if (!empty($row['contact_no'])): ?>
-                                        <span class="text-[11px] font-normal text-slate-400 font-mono"><?= htmlspecialchars($row['contact_no']) ?></span>
+                                        <span class="row-phone text-[11px] font-normal text-slate-400 font-mono"><?= htmlspecialchars($row['contact_no']) ?></span>
                                     <?php endif; ?>
                                 </td>
 
                                 <!-- Type Badge (Gold / Platinum only) -->
                                 <td class="py-3.5 px-6">
                                     <?php if (strtolower($row['card_type']) === 'gold'): ?>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/30">
                                             <i class="fa-solid fa-crown text-[10px] mr-1"></i> Gold
                                         </span>
                                     <?php else: ?>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-400/10 text-slate-300 border border-slate-400/30">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-400/15 text-slate-300 border border-slate-400/30">
                                             <i class="fa-solid fa-gem text-[10px] mr-1"></i> Platinum
                                         </span>
                                     <?php endif; ?>
                                 </td>
 
                                 <!-- DOB -->
-                                <td class="py-3.5 px-6 font-mono text-xs text-slate-300">
+                                <td class="py-3.5 px-6 font-mono text-xs text-slate-300 row-dob">
                                     <?= $dob_formatted ?>
                                 </td>
 
                                 <!-- Anniversary -->
-                                <td class="py-3.5 px-6 font-mono text-xs text-slate-300">
+                                <td class="py-3.5 px-6 font-mono text-xs text-slate-300 row-anniv">
                                     <?= $anni_formatted ?>
                                 </td>
 
                                 <!-- Action: View Button -->
                                 <td class="py-3.5 px-6 text-center">
                                     <a href="<?= base_url('main/member_details/' . $row['id']) ?>"
-                                        class="inline-flex items-center gap-1.5 bg-[#0A1020] hover:bg-blue-600 text-slate-300 hover:text-white border border-darkBorder hover:border-blue-500 text-xs font-medium px-3 py-1.5 rounded-lg transition shadow-sm">
+                                        class="view-action-btn inline-flex items-center gap-1.5 bg-[#0A1020] hover:bg-blue-600 text-slate-300 hover:text-white border border-darkBorder hover:border-blue-500 text-xs font-medium px-3 py-1.5 rounded-lg transition shadow-sm">
                                         <i class="fa-regular fa-eye text-[11px]"></i>
                                         <span>View</span>
                                     </a>
@@ -237,8 +239,8 @@ $can_delete = $is_admin;
             $baseQuery = http_build_query($queryParams);
             $queryPrefix = !empty($baseQuery) ? '?' . $baseQuery . '&page=' : '?page=';
             ?>
-            <div class="px-6 py-4 border-t border-darkBorder bg-[#0A1020] flex items-center justify-between">
-                <span class="text-xs text-slate-500">
+            <div id="membersPaginationBar" class="px-6 py-4 border-t border-darkBorder bg-[#0A1020] flex items-center justify-between">
+                <span class="text-xs text-slate-500" id="membersPageInfo">
                     Showing page <strong class="text-slate-300"><?= $current_page ?></strong> of <strong class="text-slate-300"><?= $total_pages ?></strong> (10 records/page)
                 </span>
 
@@ -269,28 +271,29 @@ $can_delete = $is_admin;
             </div>
         <?php endif; ?>
 
-        <!-- SECTION 3: Bottom Actions Bar -->
+        <!-- SECTION 3: Bottom Actions Bar (Restyled for high contrast in light & dark) -->
         <div class="p-5 border-t border-darkBorder bg-darkCard flex flex-wrap items-center justify-between gap-4">
 
             <!-- Left: Management Action Buttons -->
             <div class="flex items-center gap-2.5">
                 <?php if (!$is_viewer): ?>
-                    <!-- Add Member -->
-                    <a href="<?= base_url('main/add_member') ?>" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                    <!-- Add Member Button -->
+                    <a href="<?= base_url('main/add_member') ?>"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/25 flex items-center gap-2">
                         <i class="fa-solid fa-plus text-xs"></i> Add
                     </a>
 
                     <!-- Edit Button -->
                     <button type="button" id="editMembersBtn"
-                        class="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-sm">
+                        class="action-btn-edit bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-sm">
                         <i class="fa-regular fa-pen-to-square text-xs"></i> Edit
                     </button>
                 <?php endif; ?>
 
                 <?php if ($can_delete): ?>
-                    <!-- Remove Selected (Admin Only) -->
+                    <!-- Remove Selected Button (Admin Only) -->
                     <button type="button" id="deleteMembersBtn"
-                        class="bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl border border-red-500/30 transition flex items-center gap-2 shadow-sm">
+                        class="action-btn-remove bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl border border-red-500/30 transition flex items-center gap-2 shadow-sm">
                         <i class="fa-regular fa-trash-can text-xs"></i> Remove
                     </button>
                 <?php endif; ?>
@@ -308,7 +311,7 @@ $can_delete = $is_admin;
                 $exportQuery = !empty($_GET) ? '?' . http_build_query($_GET) : '';
                 ?>
                 <a href="<?= base_url('main/export_members_csv' . $exportQuery) ?>"
-                    class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs tracking-wider uppercase px-6 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-md">
+                    class="export-btn bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs tracking-wider uppercase px-6 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-md">
                     <i class="fa-solid fa-file-arrow-down text-sm text-emerald-400"></i>
                     <span>Export CSV</span>
                 </a>
@@ -433,6 +436,121 @@ $can_delete = $is_admin;
         </div>
     </div>
 <?php endif; ?>
+
+<!-- Scoped Light Mode Theme Adjustments for Members List -->
+<style>
+    /* Table Header in Light Mode */
+    html.light .members-table-head {
+        background-color: #f1f5f9 !important;
+        border-bottom-color: #e2e8f0 !important;
+    }
+
+    html.light .members-table-head th {
+        color: #334155 !important;
+        background-color: #f1f5f9 !important;
+    }
+
+    /* Table Rows Text in Light Mode */
+    html.light .row-name {
+        color: #0f172a !important;
+    }
+
+    html.light .row-phone,
+    html.light .row-dob,
+    html.light .row-anniv {
+        color: #64748b !important;
+    }
+
+    /* Edit Button in Light Mode (Clean White Card Button) */
+    html.light .action-btn-edit {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+
+    html.light .action-btn-edit:hover {
+        background-color: #f8fafc !important;
+        border-color: #94a3b8 !important;
+        color: #0f172a !important;
+    }
+
+    /* Remove Button in Light Mode (Legible Soft Red) */
+    html.light .action-btn-remove {
+        background-color: #fef2f2 !important;
+        color: #dc2626 !important;
+        border: 1px solid #fecaca !important;
+        box-shadow: 0 1px 2px 0 rgba(220, 38, 38, 0.05) !important;
+    }
+
+    html.light .action-btn-remove:hover {
+        background-color: #fee2e2 !important;
+        border-color: #fca5a5 !important;
+        color: #b91c1c !important;
+    }
+
+    /* Export Button in Light Mode */
+    html.light .export-btn {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06) !important;
+    }
+
+    html.light .export-btn:hover {
+        background-color: #f8fafc !important;
+        border-color: #2563eb !important;
+        color: #2563eb !important;
+    }
+
+    /* Reset Filter Button in Light Mode */
+    html.light .reset-filter-btn {
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #475569 !important;
+    }
+
+    html.light .reset-filter-btn:hover {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+    }
+
+    /* View Button in Light Mode */
+    html.light .view-action-btn {
+        background-color: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #334155 !important;
+    }
+
+    html.light .view-action-btn:hover {
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
+        color: #ffffff !important;
+    }
+
+    /* Pagination in Light Mode */
+    html.light #membersPaginationBar {
+        background-color: #ffffff !important;
+        border-top-color: #e2e8f0 !important;
+    }
+
+    html.light #membersPageInfo {
+        color: #64748b !important;
+    }
+
+    html.light #membersPageInfo strong {
+        color: #0f172a !important;
+    }
+
+    html.light #membersPaginationBar nav a {
+        color: #475569 !important;
+    }
+
+    html.light #membersPaginationBar nav a:hover {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+    }
+</style>
 
 <!-- Checkbox Selection, Single Edit, Bulk Edit, & Delete Script -->
 <script>
