@@ -1,3 +1,6 @@
+<?php
+$user_name   = $this->session->userdata('name') ?? 'Staff';
+?>
 <!-- Top Navbar -->
 <header class="h-16 bg-darkSidebar border-b border-darkBorder flex items-center justify-between px-6 shrink-0">
     <div class="flex items-center gap-4 flex-1">
@@ -25,7 +28,7 @@
         <!-- User Pill -->
         <div class="flex items-center gap-2 bg-[#0A1020] border border-darkBorder px-3 py-1 rounded-full cursor-pointer hover:border-slate-600 transition">
             <span class="w-6 h-6 rounded-full bg-emerald-700 text-white text-xs flex items-center justify-center font-semibold">AH</span>
-            <span class="text-xs font-medium text-slate-300">Admin Sahil</span>
+            <span class="text-xs font-medium text-slate-300"><?= $user_name?></span>
             <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
         </div>
     </div>

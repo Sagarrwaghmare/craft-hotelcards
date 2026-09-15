@@ -142,7 +142,7 @@ $can_delete = $is_admin;
                         <th scope="col" class="py-3.5 px-5 w-16 text-center">Sr.No</th>
                         <th scope="col" class="py-3.5 px-6">Card No</th>
                         <th scope="col" class="py-3.5 px-6">Name</th>
-                        <th scope="col" class="py-3.5 px-6">Type</th>
+                        <th scope="col" class="py-3.5 px-6">Subscription Type</th>
                         <th scope="col" class="py-3.5 px-6">DOB</th>
                         <th scope="col" class="py-3.5 px-6">Anniversary</th>
                         <th scope="col" class="py-3.5 px-6 text-center w-28">Action</th>
@@ -162,7 +162,7 @@ $can_delete = $is_admin;
                         foreach ($members as $index => $row):
                             $full_name = trim($row['first_name'] . ' ' . $row['last_name']);
                             $dob_formatted = (!empty($row['dob']) && $row['dob'] !== '0000-00-00') ? date('d-M-Y', strtotime($row['dob'])) : '-';
-                            $anni_formatted = (!empty($row['anniversary']) && $row['anniversary'] !== '0000-00-00') ? date('d-M-Y', strtotime($row['anniversary'])) : '-';
+                            $anni_formatted = (!empty($row['anniversary']) && $row['anniversary'] !== '0000-00-00') ? date('d-M-Y', strtotime($row['anniversary'])) : 'N/A';
                         ?>
                             <tr class="member-row hover:bg-slate-800/40 transition">
                                 <!-- Checkbox (Admin & Editor only) -->

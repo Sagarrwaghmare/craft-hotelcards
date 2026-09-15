@@ -11,6 +11,7 @@ function menu_class($current, $active)
 
 $user_access = strtolower(trim((string)$this->session->userdata('access')));
 $user_name   = $this->session->userdata('name') ?? 'Staff';
+$user_letter   = $user_name[0];
 $user_role   = $this->session->userdata('access') ?? 'Viewer';
 $initials    = strtoupper(substr($user_name, 0, 2));
 ?>
@@ -21,11 +22,11 @@ $initials    = strtoupper(substr($user_name, 0, 2));
     <!-- Brand / Logo -->
     <div class="h-16 flex items-center px-6 gap-3 border-b border-darkBorder/40">
         <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white shadow-md shadow-blue-600/30">
-            H
+            <?= $user_letter ?>
         </div>
         <div>
-            <h1 class="text-sm font-bold text-white tracking-wide">adminHMD</h1>
-            <p class="text-[11px] text-slate-400">Membership System</p>
+            <h1 class="text-sm font-bold text-white tracking-wide"><?= $user_name ?></h1>
+            <p class="text-[11px] text-slate-400"><?= $user_role ?></p>
         </div>
     </div>
 
@@ -112,7 +113,7 @@ $initials    = strtoupper(substr($user_name, 0, 2));
     </nav>
 
     <!-- Bottom User Info & Logout (Dynamic from Session) -->
-    <div class="p-3 border-t border-darkBorder/50 bg-[#080E1E]">
+    <!-- <div class="p-3 border-t border-darkBorder/50 bg-[#080E1E]">
         <div class="flex items-center justify-between px-2 py-1.5 rounded-xl">
             <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-full bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs uppercase">
@@ -125,12 +126,11 @@ $initials    = strtoupper(substr($user_name, 0, 2));
                     <p class="text-[10px] text-slate-400"><?= htmlspecialchars($user_role) ?></p>
                 </div>
             </div>
-            <!-- Logout Link -->
-            <a href="<?= base_url('auth/logout') ?>" title="Log Out" class="text-slate-400 hover:text-red-400 p-1.5 transition">
+                 <a href="<?= base_url('auth/logout') ?>" title="Log Out" class="text-slate-400 hover:text-red-400 p-1.5 transition">
                 <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
-            </a>
+            </a> 
         </div>
-    </div>
+    </div> -->
 
 </aside>
 

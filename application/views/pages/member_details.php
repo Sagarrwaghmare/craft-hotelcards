@@ -117,7 +117,7 @@ $can_edit  = in_array($user_role, ['admin', 'editor']);
 
         <div class="flex items-center justify-between py-2 border-b border-darkBorder/40">
             <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Anniversary:</span>
-            <span class="font-mono text-slate-300"><?= (!empty($member['anniversary']) && $member['anniversary'] !== '0000-00-00') ? date('d-M-Y', strtotime($member['anniversary'])) : '-' ?></span>
+            <span class="font-mono text-slate-300"><?= (!empty($member['anniversary']) && $member['anniversary'] !== '0000-00-00') ? date('d-M-Y', strtotime($member['anniversary'])) : 'N/A' ?></span>
         </div>
 
         <div class="flex items-center justify-between py-2 border-b border-darkBorder/40">

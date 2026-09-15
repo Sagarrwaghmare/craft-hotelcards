@@ -47,13 +47,16 @@ lets see:
 
 
  bunch of tasks
-    white and dark mode 
-    pagination of 10 in member, user and visits 
-    font size increase 
+    pagination of 10 in member, user and visits -d
+    member page remove type silver -d
+    member page filter date should be month and date only -d
+    enable edit and delte in members -d 
+    edit member page option -d 
+    type->sub type col name in dashboard column -d
+    show NA instead of blank in anniversary -d
+    change name user for side and navbar -d
+    remove down below button for logout make it in navbar -d
     
-    type->sub type col name in dashboard column 
-    member page remove type silver 
-    member page filter date should be month and date only 
-    enable edit and delte in members 
-    show NA instead of blank in anniversary 
-    edit member page option 
+    white and dark mode 
+    font size increase 
+    exports do good pdf and csv

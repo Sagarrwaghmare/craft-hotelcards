@@ -84,7 +84,7 @@
             <thead class="text-[11px] uppercase tracking-wider text-slate-400 bg-slate-900/60 border-b border-darkBorder font-semibold">
                 <tr>
                     <th scope="col" class="py-3.5 px-6">Member</th>
-                    <th scope="col" class="py-3.5 px-6">Type</th>
+                    <th scope="col" class="py-3.5 px-6">Subscription Type</th>
                     <th scope="col" class="py-3.5 px-6">Event</th>
                     <th scope="col" class="py-3.5 px-6">Date</th>
                     <th scope="col" class="py-3.5 px-6 text-center">Action</th>
