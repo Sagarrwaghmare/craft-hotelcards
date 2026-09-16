@@ -44,9 +44,31 @@
         }
     </script>
 
-    <!-- Seamless Light Mode Overrides (Requires no changes to other files) -->
-    <!-- Seamless Light Mode Theme Overrides -->
+    <!-- Global Font Scaling & Light Mode Theme Overrides -->
     <style>
+        /* =========================================================
+           GLOBAL FONT SIZE SCALING
+           Browser default is 16px. 
+           Change 17.5px to 18px or 19px if you want it even bigger!
+           ========================================================= */
+        html {
+            font-size: 17.5px !important;
+        }
+
+        /* Scale arbitrary micro-font classes proportionally */
+        .text-\[10px\] {
+            font-size: 0.72rem !important;
+            /* ~12.6px */
+        }
+
+        .text-\[11px\] {
+            font-size: 0.78rem !important;
+            /* ~13.6px */
+        }
+
+        /* =========================================================
+           SEAMLESS LIGHT MODE THEME OVERRIDES
+           ========================================================= */
         html.light body {
             background-color: #f8fafc !important;
             color: #0f172a !important;
@@ -167,6 +189,19 @@
             background-color: #f8fafc !important;
             border-color: #2563eb !important;
             color: #2563eb !important;
+        }
+
+        /* Top Add Member Button in Light Mode */
+        html.light .btn-add-member {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            border: 1px solid #2563eb !important;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25) !important;
+        }
+
+        html.light .btn-add-member:hover {
+            background-color: #1d4ed8 !important;
+            border-color: #1d4ed8 !important;
         }
 
         /* Pagination Controls in Light Mode */

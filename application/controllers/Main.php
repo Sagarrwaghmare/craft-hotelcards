@@ -1,4 +1,3 @@
-
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
@@ -291,7 +290,7 @@ class Main extends CI_Controller
         $data['active_menu']    = 'members';
         $data['gold_count']     = $this->Member_model->count_by_type('Gold');
         $data['platinum_count'] = $this->Member_model->count_by_type('Platinum');
-        $data['events']         = $this->Member_model->get_upcoming_events(50); // Fetch top upcoming events
+        $data['events']         = $this->Member_model->get_upcoming_events(50);
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
@@ -307,13 +306,41 @@ class Main extends CI_Controller
         $data['title']       = 'Members Directory';
         $data['active_menu'] = 'members_list';
 
+        // Unpack DOB Date Range Calendar
+        $dob_range = trim((string)$this->input->get('dob_range', TRUE));
+        $dob_from  = '';
+        $dob_to    = '';
+        if (!empty($dob_range)) {
+            if (strpos($dob_range, ' to ') !== false) {
+                list($dob_from, $dob_to) = explode(' to ', $dob_range);
+            } else {
+                $dob_from = $dob_range;
+                $dob_to   = $dob_range;
+            }
+        }
+
+        // Unpack Anniversary Date Range Calendar
+        $anniv_range = trim((string)$this->input->get('anniv_range', TRUE));
+        $anniv_from  = '';
+        $anniv_to    = '';
+        if (!empty($anniv_range)) {
+            if (strpos($anniv_range, ' to ') !== false) {
+                list($anniv_from, $anniv_to) = explode(' to ', $anniv_range);
+            } else {
+                $anniv_from = $anniv_range;
+                $anniv_to   = $anniv_range;
+            }
+        }
+
         $filters = [
-            'search'     => trim((string)$this->input->get('search', TRUE)),
-            'type'       => trim((string)$this->input->get('type', TRUE)),
-            'dob_from'   => trim((string)$this->input->get('dob_from', TRUE)),
-            'dob_to'     => trim((string)$this->input->get('dob_to', TRUE)),
-            'anniv_from' => trim((string)$this->input->get('anniv_from', TRUE)),
-            'anniv_to'   => trim((string)$this->input->get('anniv_to', TRUE)),
+            'search'      => trim((string)$this->input->get('search', TRUE)),
+            'type'        => trim((string)$this->input->get('type', TRUE)),
+            'dob_from'    => $dob_from,
+            'dob_to'      => $dob_to,
+            'anniv_from'  => $anniv_from,
+            'anniv_to'    => $anniv_to,
+            'dob_range'   => $dob_range,
+            'anniv_range' => $anniv_range
         ];
 
         $total_rows   = $this->Member_model->count_filtered_members($filters);
@@ -337,28 +364,65 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
+    // Export members matching current active filters to CSV
     public function export_members_csv()
     {
         $this->load->model('Member_model');
 
+        // Unpack Date Ranges for CSV Export
+        $dob_range = trim((string)$this->input->get('dob_range', TRUE));
+        $dob_from  = '';
+        $dob_to    = '';
+        if (!empty($dob_range)) {
+            if (strpos($dob_range, ' to ') !== false) {
+                list($dob_from, $dob_to) = explode(' to ', $dob_range);
+            } else {
+                $dob_from = $dob_range;
+                $dob_to   = $dob_range;
+            }
+        }
+
+        $anniv_range = trim((string)$this->input->get('anniv_range', TRUE));
+        $anniv_from  = '';
+        $anniv_to    = '';
+        if (!empty($anniv_range)) {
+            if (strpos($anniv_range, ' to ') !== false) {
+                list($anniv_from, $anniv_to) = explode(' to ', $anniv_range);
+            } else {
+                $anniv_from = $anniv_range;
+                $anniv_to   = $anniv_range;
+            }
+        }
+
         $filters = [
             'search'     => trim((string)$this->input->get('search', TRUE)),
             'type'       => trim((string)$this->input->get('type', TRUE)),
-            'dob_from'   => trim((string)$this->input->get('dob_from', TRUE)),
-            'dob_to'     => trim((string)$this->input->get('dob_to', TRUE)),
-            'anniv_from' => trim((string)$this->input->get('anniv_from', TRUE)),
-            'anniv_to'   => trim((string)$this->input->get('anniv_to', TRUE)),
+            'dob_from'   => $dob_from,
+            'dob_to'     => $dob_to,
+            'anniv_from' => $anniv_from,
+            'anniv_to'   => $anniv_to,
         ];
 
         $members = $this->Member_model->get_filtered_members($filters);
 
         $filename = 'members_export_' . date('Ymd_His') . '.csv';
 
+        // Fix 1: Wipe any buffered whitespace/newlines to eliminate the blank top line in Excel
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
 
         $output = fopen('php://output', 'w');
 
+        // Add UTF-8 BOM so Excel opens international characters without inserting a blank line
+        fputs($output, "\xEF\xBB\xBF");
+
+        // CSV Column Headers
         fputcsv($output, [
             'Sr.No',
             'Card Number',
@@ -378,19 +442,23 @@ class Main extends CI_Controller
 
         $sr = 1;
         foreach ($members as $m) {
+            // Fix 2: Wrap phone and card numbers with ="..." to stop Excel evaluating them as math (e.g. 1-555-188 = -742)
+            $phone = !empty($m['contact_no']) ? '="' . str_replace('"', '""', $m['contact_no']) . '"' : '-';
+            $cardNumber = !empty($m['card_number']) ? '="' . str_replace('"', '""', $m['card_number']) . '"' : '-';
+
             fputcsv($output, [
                 $sr++,
-                $m['card_number'],
+                $cardNumber,
                 $m['card_type'],
                 $m['first_name'],
                 $m['last_name'],
                 $m['company_name'] ?? '',
                 $m['designation'] ?? '',
-                $m['contact_no'] ?? '',
+                $phone,
                 $m['email'] ?? '',
                 $m['address'] ?? '',
-                !empty($m['dob']) ? date('d-M-Y', strtotime($m['dob'])) : '',
-                !empty($m['anniversary']) ? date('d-M-Y', strtotime($m['anniversary'])) : '',
+                (!empty($m['dob']) && $m['dob'] !== '0000-00-00') ? date('d-M-Y', strtotime($m['dob'])) : '',
+                (!empty($m['anniversary']) && $m['anniversary'] !== '0000-00-00') ? date('d-M-Y', strtotime($m['anniversary'])) : '',
                 $m['marital_status'] ?? '',
                 $m['created_at'] ?? ''
             ]);
@@ -400,7 +468,6 @@ class Main extends CI_Controller
         exit;
     }
 
-    // User Management (10 records per page)
     public function users()
     {
         $this->_require_admin();
@@ -411,7 +478,7 @@ class Main extends CI_Controller
         $data['active_menu'] = 'users';
 
         $total_rows   = $this->User_model->count_all();
-        $per_page     = 10; // Default: 10 users per page
+        $per_page     = 10;
         $current_page = max(1, (int)$this->input->get('page'));
         $offset       = ($current_page - 1) * $per_page;
 
@@ -498,7 +565,6 @@ class Main extends CI_Controller
         redirect('main/users');
     }
 
-    // Member Details (With 10 visits per page pagination)
     public function member_details($member_id = null)
     {
         if (empty($member_id)) {
@@ -516,7 +582,6 @@ class Main extends CI_Controller
             show_404();
         }
 
-        // Paginate visits: 10 records per page
         $v_per_page   = 10;
         $v_page       = max(1, (int)$this->input->get('vpage'));
         $v_offset     = ($v_page - 1) * $v_per_page;

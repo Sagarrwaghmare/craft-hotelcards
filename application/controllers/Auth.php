@@ -129,34 +129,34 @@ class Auth extends CI_Controller
         redirect('auth/reset_password');
     }
 
-    public function setup_admin()
-    {
-        $this->load->model('User_model');
+    // public function setup_admin()
+    // {
+    //     $this->load->model('User_model');
 
-        // Prevent duplicate creation if admin already exists
-        if ($this->User_model->get_by_username('admin')) {
-            echo "Admin user already exists!";
-            return;
-        }
+    //     // Prevent duplicate creation if admin already exists
+    //     if ($this->User_model->get_by_username('admin')) {
+    //         echo "Admin user already exists!";
+    //         return;
+    //     }
 
-        $admin_data = [
-            'name'          => 'Super Admin',
-            'username'      => 'admin',
-            'email'         => 'admin@hotelcards.local',
-            'contact_no'    => '+1-555-0100',
-            'password_hash' => password_hash('admin123', PASSWORD_BCRYPT),
-            'access'        => 'Admin'
-        ];
+    //     $admin_data = [
+    //         'name'          => 'Super Admin',
+    //         'username'      => 'admin',
+    //         'email'         => 'admin@hotelcards.local',
+    //         'contact_no'    => '+1-555-0100',
+    //         'password_hash' => password_hash('admin123', PASSWORD_BCRYPT),
+    //         'access'        => 'Admin'
+    //     ];
 
-        $id = $this->User_model->add($admin_data);
+    //     $id = $this->User_model->add($admin_data);
 
-        if ($id) {
-            echo "<h2 style='color:green;'>Admin Created Successfully!</h2>";
-            echo "<p>Username: <b>admin</b></p>";
-            echo "<p>Password: <b>admin123</b></p>";
-            echo "<p><a href='" . base_url('auth') . "'>Click here to Log In</a></p>";
-        } else {
-            echo "<h2 style='color:red;'>Failed to create admin. Check DB connection.</h2>";
-        }
-    }
+    //     if ($id) {
+    //         echo "<h2 style='color:green;'>Admin Created Successfully!</h2>";
+    //         echo "<p>Username: <b>admin</b></p>";
+    //         echo "<p>Password: <b>admin123</b></p>";
+    //         echo "<p><a href='" . base_url('auth') . "'>Click here to Log In</a></p>";
+    //     } else {
+    //         echo "<h2 style='color:red;'>Failed to create admin. Check DB connection.</h2>";
+    //     }
+    // }
 }

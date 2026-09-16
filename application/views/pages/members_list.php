@@ -9,6 +9,10 @@ $can_edit   = ($is_admin || $is_editor);
 $can_delete = $is_admin;
 ?>
 
+<!-- Flatpickr Range Calendar Assets -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <!-- Header Title -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
     <div class="flex items-center gap-3">
@@ -47,7 +51,7 @@ $can_delete = $is_admin;
 <div class="bg-darkCard border border-darkBorder rounded-2xl p-5 mb-6 shadow-xl">
     <form action="<?= base_url('main/members_list') ?>" method="GET" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-end">
 
-        <!-- Field Name / Search -->
+        <!-- Field 1: Member Search -->
         <div class="xl:col-span-3">
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Member Search</label>
             <div class="relative">
@@ -60,7 +64,7 @@ $can_delete = $is_admin;
             </div>
         </div>
 
-        <!-- Membership Type (Only Gold & Platinum) -->
+        <!-- Field 2: Membership Type -->
         <div class="xl:col-span-2">
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Card Type</label>
             <div class="relative">
@@ -75,42 +79,36 @@ $can_delete = $is_admin;
             </div>
         </div>
 
-        <!-- DOB Range (Month & Day: MM-DD) -->
+        <!-- Field 3: DOB Range Calendar -->
         <div class="xl:col-span-3">
-            <div class="flex items-center justify-between mb-2">
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">DOB Range</label>
-                <span class="text-[10px] text-slate-400 font-mono">MM-DD</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-                <input type="text" name="dob_from" placeholder="From 01-15" maxlength="5"
-                    value="<?= htmlspecialchars($this->input->get('dob_from') ?? '') ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono">
-                <input type="text" name="dob_to" placeholder="To 12-31" maxlength="5"
-                    value="<?= htmlspecialchars($this->input->get('dob_to') ?? '') ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono">
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">DOB Date Range</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 z-10">
+                    <i class="fa-regular fa-calendar text-xs"></i>
+                </div>
+                <input type="text" name="dob_range" id="dob_range" placeholder="Pick start & end date..."
+                    value="<?= htmlspecialchars($this->input->get('dob_range') ?? '') ?>"
+                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition cursor-pointer font-medium">
             </div>
         </div>
 
-        <!-- Anniversary Range (Month & Day: MM-DD) -->
+        <!-- Field 4: Anniversary Range Calendar -->
         <div class="xl:col-span-3">
-            <div class="flex items-center justify-between mb-2">
-                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Anniversary Range</label>
-                <span class="text-[10px] text-slate-400 font-mono">MM-DD</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-                <input type="text" name="anniv_from" placeholder="From 01-15" maxlength="5"
-                    value="<?= htmlspecialchars($this->input->get('anniv_from') ?? '') ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono">
-                <input type="text" name="anniv_to" placeholder="To 12-31" maxlength="5"
-                    value="<?= htmlspecialchars($this->input->get('anniv_to') ?? '') ?>"
-                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-2.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono">
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Anniversary Range</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 z-10">
+                    <i class="fa-regular fa-calendar-check text-xs"></i>
+                </div>
+                <input type="text" name="anniv_range" id="anniv_range" placeholder="Pick start & end date..."
+                    value="<?= htmlspecialchars($this->input->get('anniv_range') ?? '') ?>"
+                    class="w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition cursor-pointer font-medium">
             </div>
         </div>
 
-        <!-- Action Buttons (Solid Blue Filter CTA + Reset) -->
+        <!-- Action Buttons -->
         <div class="xl:col-span-1 flex items-center gap-1.5">
             <button type="submit" title="Apply Filter"
-                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl border border-blue-600 hover:border-blue-700 transition flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/25 active:scale-[0.98]">
+                class="flex-1 bg-blue-600 hover:bg-blue-700 !text-white font-semibold text-xs py-2.5 px-3 rounded-xl border border-blue-600 hover:border-blue-700 transition flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/25 active:scale-[0.98]">
                 <i class="fa-solid fa-filter text-[10px]"></i>
                 <span>Filter</span>
             </button>
@@ -251,7 +249,7 @@ $can_delete = $is_admin;
                     <?php endif; ?>
 
                     <?php
-                    $start = max(1, $current_page - 2);
+                    $start = max(1, current_page: $current_page - 2);
                     $end = min($total_pages, $current_page + 2);
                     for ($p = $start; $p <= $end; $p++):
                     ?>
@@ -271,7 +269,7 @@ $can_delete = $is_admin;
             </div>
         <?php endif; ?>
 
-        <!-- SECTION 3: Bottom Actions Bar (Restyled for high contrast in light & dark) -->
+        <!-- SECTION 3: Bottom Actions Bar -->
         <div class="p-5 border-t border-darkBorder bg-darkCard flex flex-wrap items-center justify-between gap-4">
 
             <!-- Left: Management Action Buttons -->
@@ -279,7 +277,7 @@ $can_delete = $is_admin;
                 <?php if (!$is_viewer): ?>
                     <!-- Add Member Button -->
                     <a href="<?= base_url('main/add_member') ?>"
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/25 flex items-center gap-2">
+                        class="bg-blue-600 hover:bg-blue-700 !text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/25 flex items-center gap-2">
                         <i class="fa-solid fa-plus text-xs"></i> Add
                     </a>
 
@@ -437,7 +435,7 @@ $can_delete = $is_admin;
     </div>
 <?php endif; ?>
 
-<!-- Scoped Light Mode Theme Adjustments for Members List -->
+<!-- Scoped Styling (Theme-aware Flatpickr & Light Mode Controls) -->
 <style>
     /* Table Header in Light Mode */
     html.light .members-table-head {
@@ -461,7 +459,7 @@ $can_delete = $is_admin;
         color: #64748b !important;
     }
 
-    /* Edit Button in Light Mode (Clean White Card Button) */
+    /* Edit Button in Light Mode */
     html.light .action-btn-edit {
         background-color: #ffffff !important;
         color: #1e293b !important;
@@ -475,7 +473,7 @@ $can_delete = $is_admin;
         color: #0f172a !important;
     }
 
-    /* Remove Button in Light Mode (Legible Soft Red) */
+    /* Remove Button in Light Mode */
     html.light .action-btn-remove {
         background-color: #fef2f2 !important;
         color: #dc2626 !important;
@@ -550,11 +548,274 @@ $can_delete = $is_admin;
         background-color: #f1f5f9 !important;
         color: #0f172a !important;
     }
+
+    /* ========================================================
+       FLATPICKR COMPLETE THEME FIX (DARK & LIGHT MODES)
+       ======================================================== */
+
+    /* 1. Base Calendar Container */
+    .flatpickr-calendar {
+        background: #111C38 !important;
+        border: 1px solid #1E2945 !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4) !important;
+        border-radius: 1rem !important;
+        font-family: inherit !important;
+        overflow: hidden !important;
+    }
+
+    /* Remove the white default top/bottom pointer arrow */
+    .flatpickr-calendar.arrowTop:before,
+    .flatpickr-calendar.arrowTop:after {
+        border-bottom-color: #0A1020 !important;
+    }
+
+    .flatpickr-calendar.arrowBottom:before,
+    .flatpickr-calendar.arrowBottom:after {
+        border-top-color: #111C38 !important;
+    }
+
+    /* 2. Month & Year Header */
+    .flatpickr-months {
+        background: #0A1020 !important;
+        padding-top: 8px !important;
+        padding-bottom: 4px !important;
+    }
+
+    .flatpickr-current-month {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    /* Fix: Month Dropdown Options in Dark Mode (No more white-on-white menu) */
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+        background: transparent !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        padding: 2px 6px !important;
+        border-radius: 0.5rem !important;
+        cursor: pointer !important;
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months option {
+        background-color: #111C38 !important;
+        color: #f8fafc !important;
+        padding: 8px 12px !important;
+    }
+
+    .flatpickr-current-month input.cur-year {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    .flatpickr-current-month .numInputWrapper span {
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .flatpickr-current-month .numInputWrapper span.arrowUp:after {
+        border-bottom-color: #ffffff !important;
+    }
+
+    .flatpickr-current-month .numInputWrapper span.arrowDown:after {
+        border-top-color: #ffffff !important;
+    }
+
+    /* Navigation Arrows */
+    .flatpickr-months .flatpickr-prev-month,
+    .flatpickr-months .flatpickr-next-month {
+        color: #94a3b8 !important;
+        fill: #94a3b8 !important;
+        padding: 8px !important;
+    }
+
+    .flatpickr-months .flatpickr-prev-month:hover svg,
+    .flatpickr-months .flatpickr-next-month:hover svg {
+        fill: #38bdf8 !important;
+    }
+
+    /* Weekday Headers */
+    span.flatpickr-weekday {
+        background: #0A1020 !important;
+        color: #64748b !important;
+        font-weight: 600 !important;
+        font-size: 11px !important;
+        text-transform: uppercase !important;
+    }
+
+    /* 3. Days Container & Neutral Days */
+    .flatpickr-innerContainer,
+    .flatpickr-rContainer,
+    .flatpickr-days {
+        background: #111C38 !important;
+    }
+
+    .flatpickr-day {
+        color: #cbd5e1 !important;
+        border-radius: 0.5rem !important;
+        border-color: transparent !important;
+        font-size: 12px !important;
+    }
+
+    .flatpickr-day:hover {
+        background: #1e293b !important;
+        color: #ffffff !important;
+    }
+
+    .flatpickr-day.prevMonthDay,
+    .flatpickr-day.nextMonthDay {
+        color: #475569 !important;
+    }
+
+    /* Fix: In-Range Days (Removes the white arc brackets!) */
+    .flatpickr-day.inRange {
+        background: #1e3a8a !important;
+        /* Soft deep royal blue */
+        color: #bfdbfe !important;
+        border-color: transparent !important;
+        border-radius: 0 !important;
+        box-shadow: -5px 0 0 #1e3a8a, 5px 0 0 #1e3a8a !important;
+        /* Overrides default #e6e6e6 white shadows! */
+    }
+
+    .flatpickr-day.startRange {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border-radius: 0.5rem 0 0 0.5rem !important;
+        border-color: #2563eb !important;
+        box-shadow: 2px 0 0 #1e3a8a !important;
+    }
+
+    .flatpickr-day.endRange {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border-radius: 0 0.5rem 0.5rem 0 !important;
+        border-color: #2563eb !important;
+        box-shadow: -2px 0 0 #1e3a8a !important;
+    }
+
+    .flatpickr-day.startRange.endRange {
+        border-radius: 0.5rem !important;
+        box-shadow: none !important;
+    }
+
+    .flatpickr-day.today {
+        border-color: #38bdf8 !important;
+    }
+
+    /* ========================================================
+       FLATPICKR IN LIGHT MODE
+       ======================================================== */
+    html.light .flatpickr-calendar {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    html.light .flatpickr-calendar.arrowTop:before,
+    html.light .flatpickr-calendar.arrowTop:after {
+        border-bottom-color: #f8fafc !important;
+    }
+
+    html.light .flatpickr-calendar.arrowBottom:before,
+    html.light .flatpickr-calendar.arrowBottom:after {
+        border-top-color: #ffffff !important;
+    }
+
+    html.light .flatpickr-months,
+    html.light span.flatpickr-weekday {
+        background: #f8fafc !important;
+    }
+
+    html.light .flatpickr-current-month .flatpickr-monthDropdown-months {
+        color: #0f172a !important;
+    }
+
+    html.light .flatpickr-current-month .flatpickr-monthDropdown-months option {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+    html.light .flatpickr-current-month input.cur-year {
+        color: #0f172a !important;
+    }
+
+    html.light .flatpickr-current-month .numInputWrapper span.arrowUp:after {
+        border-bottom-color: #0f172a !important;
+    }
+
+    html.light .flatpickr-current-month .numInputWrapper span.arrowDown:after {
+        border-top-color: #0f172a !important;
+    }
+
+    html.light .flatpickr-months .flatpickr-prev-month svg,
+    html.light .flatpickr-months .flatpickr-next-month svg {
+        fill: #64748b !important;
+    }
+
+    html.light .flatpickr-months .flatpickr-prev-month:hover svg,
+    html.light .flatpickr-months .flatpickr-next-month:hover svg {
+        fill: #2563eb !important;
+    }
+
+    html.light span.flatpickr-weekday {
+        color: #64748b !important;
+    }
+
+    html.light .flatpickr-innerContainer,
+    html.light .flatpickr-rContainer,
+    html.light .flatpickr-days {
+        background: #ffffff !important;
+    }
+
+    html.light .flatpickr-day {
+        color: #1e293b !important;
+    }
+
+    html.light .flatpickr-day:hover {
+        background: #f1f5f9 !important;
+    }
+
+    html.light .flatpickr-day.prevMonthDay,
+    html.light .flatpickr-day.nextMonthDay {
+        color: #94a3b8 !important;
+    }
+
+    html.light .flatpickr-day.inRange {
+        background: #eff6ff !important;
+        color: #1d4ed8 !important;
+        box-shadow: -5px 0 0 #eff6ff, 5px 0 0 #eff6ff !important;
+    }
+
+    html.light .flatpickr-day.startRange {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        box-shadow: 2px 0 0 #eff6ff !important;
+    }
+
+    html.light .flatpickr-day.endRange {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        box-shadow: -2px 0 0 #eff6ff !important;
+    }
 </style>
 
-<!-- Checkbox Selection, Single Edit, Bulk Edit, & Delete Script -->
+<!-- Checkbox Selection, Single Edit, Bulk Edit, & Flatpickr Range Calendar Scripts -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Flatpickr Range Calendar on DOB & Anniversary
+        const flatpickrCommon = {
+            mode: "range",
+            dateFormat: "Y-m-d", // Form submits standard parseable date
+            altInput: true,
+            altFormat: "d-M", // User visually sees "15-Mar to 25-Apr" (No year clutter!)
+            altInputClass: "w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition cursor-pointer font-medium"
+        };
+
+        flatpickr("#dob_range", flatpickrCommon);
+        flatpickr("#anniv_range", flatpickrCommon);
+
+        // Checkbox & Selection elements
         const selectAll = document.getElementById('selectAllMembersCheckbox');
         const rowCheckboxes = document.querySelectorAll('.member-checkbox');
         const batchForm = document.getElementById('membersBatchForm');

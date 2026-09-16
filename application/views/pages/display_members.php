@@ -174,7 +174,7 @@ $is_viewer = ($user_role === 'viewer');
                                 <span class="row-days text-[10px] text-slate-500"><?= $daysText ?></span>
                             </td>
 
-                            <!-- WhatsApp Link (High contrast in both light & dark) -->
+                            <!-- WhatsApp Link -->
                             <td class="py-4 px-6 text-center">
                                 <?php if (!empty($clean_phone)): ?>
                                     <a href="<?= $wa_url ?>"
@@ -206,68 +206,19 @@ $is_viewer = ($user_role === 'viewer');
         <nav class="flex items-center gap-1 text-xs font-medium" id="eventsPageNav"></nav>
     </div>
 
-    <!-- Export Action Footer -->
+    <!-- Direct CSV Export Button (No Modal, Instant Download) -->
     <div class="p-6 bg-[#0A1020] border-t border-darkBorder flex justify-center">
-        <button type="button" onclick="openExportModal()" class="export-btn bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs tracking-wider uppercase px-8 py-3 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-lg hover:border-blue-500/50">
-            <i class="fa-solid fa-file-arrow-down text-sm text-blue-400"></i> Export Schedule
+        <button type="button" onclick="exportToCSV()"
+            class="export-btn bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs tracking-wider uppercase px-8 py-3 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-lg hover:border-blue-500/50 active:scale-[0.99]">
+            <i class="fa-solid fa-file-csv text-sm text-emerald-400"></i>
+            <span>Export CSV</span>
         </button>
-    </div>
-
-    <!-- EXPORT FORMAT MODAL -->
-    <div id="exportModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-        <div class="bg-[#0f172a] border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 relative animate-in fade-in zoom-in duration-150">
-
-            <!-- Modal Header -->
-            <div class="flex items-center justify-between pb-4 border-b border-slate-800">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center">
-                        <i class="fa-solid fa-download text-sm"></i>
-                    </div>
-                    <h3 class="text-base font-bold text-white">Export Schedule</h3>
-                </div>
-                <button type="button" onclick="closeExportModal()" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <p class="text-xs text-slate-400 mt-3 mb-5">
-                Choose your preferred file format to download the upcoming events schedule:
-            </p>
-
-            <!-- Format Options Grid -->
-            <div class="grid grid-cols-2 gap-4">
-                <!-- Option 1: CSV -->
-                <button type="button" onclick="exportToCSV()" class="group bg-slate-900/80 hover:bg-emerald-950/30 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 flex flex-col items-center text-center transition">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mb-3 group-hover:scale-110 transition">
-                        <i class="fa-solid fa-file-csv text-2xl"></i>
-                    </div>
-                    <span class="text-sm font-semibold text-white">CSV Spreadsheet</span>
-                    <span class="text-[11px] text-slate-400 mt-1">Excel & Sheets ready</span>
-                </button>
-
-                <!-- Option 2: PDF -->
-                <button type="button" onclick="exportToPDF()" class="group bg-slate-900/80 hover:bg-rose-950/30 border border-slate-800 hover:border-rose-500/50 rounded-xl p-4 flex flex-col items-center text-center transition">
-                    <div class="w-12 h-12 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-center mb-3 group-hover:scale-110 transition">
-                        <i class="fa-solid fa-file-pdf text-2xl"></i>
-                    </div>
-                    <span class="text-sm font-semibold text-white">PDF Document</span>
-                    <span class="text-[11px] text-slate-400 mt-1">Printable report</span>
-                </button>
-            </div>
-
-            <div class="mt-6 flex justify-end">
-                <button type="button" onclick="closeExportModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white transition">
-                    Cancel
-                </button>
-            </div>
-        </div>
     </div>
 
 </div>
 
 <!-- Scoped Light Mode Adjustments for Dashboard -->
 <style>
-    /* Top Add Member Button in Light Mode */
     html.light .btn-add-member {
         background-color: #2563eb !important;
         color: #ffffff !important;
@@ -281,7 +232,7 @@ $is_viewer = ($user_role === 'viewer');
     }
 </style>
 
-<!-- JavaScript: Toggle Filtering + 10-Row Pagination -->
+<!-- JavaScript: Toggle Filtering, Pagination, & Direct CSV Export -->
 <script>
     let currentFilter = 'all'; // 'all', 'gold', or 'platinum'
     let currentPage = 1;
@@ -350,7 +301,6 @@ $is_viewer = ($user_role === 'viewer');
             currentPage = totalPages;
         }
 
-        // Show/hide based on pagination (10 per page)
         const startIndex = (currentPage - 1) * pageSize;
         const endIndex = startIndex + pageSize;
 
@@ -368,7 +318,6 @@ $is_viewer = ($user_role === 'viewer');
             countDisplay.innerText = totalMatching + ' events';
         }
 
-        // Build pagination controls
         if (pageInfo) {
             pageInfo.innerHTML = `Showing page <strong class="text-slate-300">${currentPage}</strong> of <strong class="text-slate-300">${totalPages}</strong> (${totalMatching} total events)`;
         }
@@ -399,34 +348,11 @@ $is_viewer = ($user_role === 'viewer');
     document.addEventListener('DOMContentLoaded', function() {
         applyFilterAndPagination();
     });
-</script>
 
-<!-- html2pdf.js CDN for direct PDF downloads -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-<script>
-    function openExportModal() {
-        const modal = document.getElementById('exportModal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-
-    function closeExportModal() {
-        const modal = document.getElementById('exportModal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
-
-    document.getElementById('exportModal').addEventListener('click', function(e) {
-        if (e.target === this) closeExportModal();
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeExportModal();
-    });
-
+    // ========================================================
+    // DIRECT CSV EXPORT (With Excel Phone Formula Fix)
+    // ========================================================
     function exportToCSV() {
-        closeExportModal();
-
         const rows = document.querySelectorAll('#eventsTable tbody tr.event-row');
         let csvContent = "\uFEFFMember Name,Contact No,Card Type,Event,Date,Schedule\n";
         let count = 0;
@@ -435,8 +361,18 @@ $is_viewer = ($user_role === 'viewer');
             const rowType = row.getAttribute('data-type');
             if (currentFilter !== 'all' && rowType !== currentFilter) return;
 
-            const name = `"${(row.dataset.name  || '').replace(/"/g, '""')}"`;
-            const phone = `"${(row.dataset.phone || '').replace(/"/g, '""')}"`;
+            const name = `"${(row.dataset.name || '').replace(/"/g, '""')}"`;
+
+            // Excel Phone Formula Fix:
+            // Prevents Excel from calculating "+1-555-0188" as "= 1 - 555 - 188 = -742"
+            const rawPhone = (row.dataset.phone || '').trim();
+            let phone = '""';
+            if (rawPhone && rawPhone !== '-') {
+                phone = `"=""${rawPhone.replace(/"/g, '""')}"""`;
+            } else {
+                phone = '"-"';
+            }
+
             const card = `"${(row.dataset.card  || '').replace(/"/g, '""')}"`;
             const event = `"${(row.dataset.event || '').replace(/"/g, '""')}"`;
             const date = `"${(row.dataset.date  || '').replace(/"/g, '""')}"`;
@@ -463,128 +399,5 @@ $is_viewer = ($user_role === 'viewer');
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    }
-
-    function exportToPDF() {
-        closeExportModal();
-
-        const rows = document.querySelectorAll('#eventsTable tbody tr.event-row');
-        const visibleRows = [];
-
-        rows.forEach(row => {
-            const rowType = row.getAttribute('data-type');
-            if (currentFilter !== 'all' && rowType !== currentFilter) return;
-
-            visibleRows.push({
-                name: row.dataset.name || '',
-                phone: row.dataset.phone || '-',
-                card: row.dataset.card || '',
-                event: row.dataset.event || '',
-                date: row.dataset.date || '',
-                days: row.dataset.days || ''
-            });
-        });
-
-        if (visibleRows.length === 0) {
-            alert('No records available to export.');
-            return;
-        }
-
-        const now = new Date();
-        const formattedDate = now.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: '2-digit'
-        });
-
-        let tableRowsHtml = '';
-        visibleRows.forEach(item => {
-            tableRowsHtml += `
-                <tr>
-                    <td style="border: 1px solid #D1D5DB; padding: 10px 14px; font-weight: 500; color: #111827;">${item.name}</td>
-                    <td style="border: 1px solid #D1D5DB; padding: 10px 14px; color: #374151;">${item.phone}</td>
-                    <td style="border: 1px solid #D1D5DB; padding: 10px 14px; color: #374151;">${item.card}</td>
-                    <td style="border: 1px solid #D1D5DB; padding: 10px 14px; color: #374151;">${item.event}</td>
-                    <td style="border: 1px solid #D1D5DB; padding: 10px 14px; color: #374151;">${item.date}</td>
-                    <td style="border: 1px solid #D1D5DB; padding: 10px 14px; color: #374151;">${item.days}</td>
-                </tr>
-            `;
-        });
-
-        const printContainer = document.createElement('div');
-        printContainer.style.position = 'fixed';
-        printContainer.style.left = '-9999px';
-        printContainer.style.top = '0';
-        printContainer.style.width = '1000px';
-        printContainer.style.padding = '32px 40px';
-        printContainer.style.backgroundColor = '#ffffff';
-        printContainer.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        printContainer.style.color = '#111827';
-
-        printContainer.innerHTML = `
-            <div style="margin-bottom: 24px;">
-                <h1 style="font-size: 26px; font-weight: 700; color: #111827; margin: 0 0 6px 0; letter-spacing: -0.02em;">
-                    Membership & Events Report
-                </h1>
-                <div style="font-size: 14px; color: #374151; margin: 0;">
-                    ${formattedDate} &bull; Hotel Cards Overview
-                </div>
-            </div>
-
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
-                <thead>
-                    <tr style="background-color: #E5E7EB;">
-                        <th style="border: 1px solid #D1D5DB; padding: 10px 14px; font-weight: 600; color: #111827;">Member Name</th>
-                        <th style="border: 1px solid #D1D5DB; padding: 10px 14px; font-weight: 600; color: #111827;">Contact No</th>
-                        <th style="border: 1px solid #D1D5DB; padding: 10px 14px; font-weight: 600; color: #111827;">Card Type</th>
-                        <th style="border: 1px solid #D1D5DB; padding: 10px 14px; font-weight: 600; color: #111827;">Event</th>
-                        <th style="border: 1px solid #D1D5DB; padding: 10px 14px; font-weight: 600; color: #111827;">Date</th>
-                        <th style="border: 1px solid #D1D5DB; padding: 10px 14px; font-weight: 600; color: #111827;">Schedule</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${tableRowsHtml}
-                </tbody>
-                <tfoot>
-                    <tr style="font-weight: 700; background-color: #ffffff;">
-                        <td style="border: 1px solid #D1D5DB; padding: 12px 14px; color: #111827;">Total</td>
-                        <td style="border: 1px solid #D1D5DB; padding: 12px 14px; color: #6B7280;">--</td>
-                        <td style="border: 1px solid #D1D5DB; padding: 12px 14px; color: #6B7280;">--</td>
-                        <td style="border: 1px solid #D1D5DB; padding: 12px 14px; color: #6B7280;">--</td>
-                        <td style="border: 1px solid #D1D5DB; padding: 12px 14px; color: #6B7280;">--</td>
-                        <td style="border: 1px solid #D1D5DB; padding: 12px 14px; color: #111827;">${visibleRows.length} Events</td>
-                    </tr>
-                </tfoot>
-            </table>
-        `;
-
-        document.body.appendChild(printContainer);
-
-        const todaySlug = now.toISOString().slice(0, 10);
-        const opt = {
-            margin: [10, 10, 10, 10],
-            filename: `Membership_Events_Report_${todaySlug}.pdf`,
-            image: {
-                type: 'jpeg',
-                quality: 0.98
-            },
-            html2canvas: {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#ffffff'
-            },
-            jsPDF: {
-                unit: 'mm',
-                format: 'a4',
-                orientation: 'portrait'
-            }
-        };
-
-        html2pdf().set(opt).from(printContainer).save().then(() => {
-            document.body.removeChild(printContainer);
-        }).catch(err => {
-            console.error('PDF generation error:', err);
-            document.body.removeChild(printContainer);
-        });
     }
 </script>

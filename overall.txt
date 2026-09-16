@@ -56,8 +56,8 @@ lets see:
     show NA instead of blank in anniversary -d
     change name user for side and navbar -d
     remove down below button for logout make it in navbar -d
+    white and dark mode -d
+    font size increase -d
     
-    white and dark mode 
-    font size increase 
-    exports do good pdf and csv
-    make calendars filter look good...
+    exports do good pdf and csv -d
+    make calendars filter look good... -d
