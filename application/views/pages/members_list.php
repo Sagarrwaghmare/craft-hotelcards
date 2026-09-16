@@ -249,7 +249,7 @@ $can_delete = $is_admin;
                     <?php endif; ?>
 
                     <?php
-                    $start = max(1, current_page: $current_page - 2);
+                    $start = max(1, $current_page - 2);
                     $end = min($total_pages, $current_page + 2);
                     for ($p = $start; $p <= $end; $p++):
                     ?>
