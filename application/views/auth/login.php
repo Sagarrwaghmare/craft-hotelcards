@@ -107,7 +107,7 @@
         <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/20 mb-3 border border-blue-400/30">
             <i class="fa-solid fa-shapes text-white text-2xl"></i>
         </div>
-        <h1 class="auth-brand-title text-xl font-extrabold tracking-widest text-white uppercase">HOTEL MEMBERSHIP SYSTEM</h1>
+        <h1 class="auth-brand-title text-xl font-extrabold tracking-widest text-white uppercase">HOTEL HERITAGE</h1>
         <p class="auth-brand-subtitle text-xs text-slate-400 mt-1">Sign in to manage members, cards, and staff logs</p>
     </div>
 
