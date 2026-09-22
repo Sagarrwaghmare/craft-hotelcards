@@ -93,4 +93,19 @@ class Comember_model extends CI_Model
         $this->db->where_in('id', $ids);
         return $this->db->delete($this->table);
     }
+    public function get_counts_map($member_ids = [])
+    {
+        $this->db->select('member_id, COUNT(*) as total');
+        if (!empty($member_ids)) {
+            $this->db->where_in('member_id', array_map('intval', $member_ids));
+        }
+        $this->db->group_by('member_id');
+        $rows = $this->db->get($this->table)->result_array();
+
+        $map = [];
+        foreach ($rows as $r) {
+            $map[$r['member_id']] = (int)$r['total'];
+        }
+        return $map;
+    }
 }

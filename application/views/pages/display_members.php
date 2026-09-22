@@ -17,7 +17,7 @@ $is_viewer = ($user_role === 'viewer');
         </div>
     </div>
 
-    <!-- Add Member Button (Hidden for Viewers, High-contrast styling) -->
+    <!-- Add Member Button -->
     <?php if (!$is_viewer): ?>
         <a href="<?= base_url('main/add_member') ?>"
             class="btn-add-member bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase px-4 py-2.5 rounded-xl transition shadow-md shadow-blue-600/25 flex items-center gap-2 self-start sm:self-auto active:scale-[0.98]">
@@ -96,6 +96,7 @@ $is_viewer = ($user_role === 'viewer');
                 <tr>
                     <th scope="col" class="py-3.5 px-6">Member</th>
                     <th scope="col" class="py-3.5 px-6">Subscription Type</th>
+                    <!-- <th scope="col" class="py-3.5 px-6 text-center">Co-Members</th> -->
                     <th scope="col" class="py-3.5 px-6">Event</th>
                     <th scope="col" class="py-3.5 px-6">Date</th>
                     <th scope="col" class="py-3.5 px-6 text-center">Action</th>
@@ -104,7 +105,7 @@ $is_viewer = ($user_role === 'viewer');
             <tbody class="divide-y divide-darkBorder">
                 <?php if (empty($events)): ?>
                     <tr id="empty-state-row">
-                        <td colspan="5" class="py-10 text-center text-slate-500">
+                        <td colspan="6" class="py-10 text-center text-slate-500">
                             <i class="fa-solid fa-calendar-xmark text-2xl mb-2 block"></i>
                             No upcoming birthdays or anniversaries found.
                         </td>
@@ -117,6 +118,7 @@ $is_viewer = ($user_role === 'viewer');
                             ? "https://wa.me/{$clean_phone}?text=" . rawurlencode($greetMessage)
                             : "";
                         $daysText = ($row['days_left'] == 0) ? 'Today' : 'in ' . $row['days_left'] . ' days';
+                        $co_count = (int)($row['co_members_count'] ?? 0);
                     ?>
                         <tr class="event-row hover:bg-slate-800/40 transition"
                             data-type="<?= strtolower($row['type']) ?>"
@@ -154,6 +156,14 @@ $is_viewer = ($user_role === 'viewer');
                                     </span>
                                 <?php endif; ?>
                             </td>
+
+                            <!-- Co-Members Count Badge -->
+                            <!-- <td class="py-4 px-6 text-center">
+                                <span class="co-count-badge inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold <?= $co_count > 0 ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30' : 'bg-slate-800/60 text-slate-500 border border-slate-700/50' ?>">
+                                    <i class="fa-solid fa-people-roof text-[10px]"></i>
+                                    <?= $co_count ?>
+                                </span>
+                            </td> -->
 
                             <!-- Event Badge -->
                             <td class="py-4 px-6">
@@ -206,7 +216,7 @@ $is_viewer = ($user_role === 'viewer');
         <nav class="flex items-center gap-1 text-xs font-medium" id="eventsPageNav"></nav>
     </div>
 
-    <!-- Direct CSV Export Button (No Modal, Instant Download) -->
+    <!-- Direct CSV Export Button -->
     <div class="p-6 bg-[#0A1020] border-t border-darkBorder flex justify-center">
         <button type="button" onclick="exportToCSV()"
             class="export-btn bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs tracking-wider uppercase px-8 py-3 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-lg hover:border-blue-500/50 active:scale-[0.99]">
@@ -230,13 +240,20 @@ $is_viewer = ($user_role === 'viewer');
         background-color: #1d4ed8 !important;
         border-color: #1d4ed8 !important;
     }
+
+    /* Co-Members Badge in Light Mode */
+    html.light .co-count-badge {
+        background-color: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+        color: #334155 !important;
+    }
 </style>
 
 <!-- JavaScript: Toggle Filtering, Pagination, & Direct CSV Export -->
 <script>
-    let currentFilter = 'all'; // 'all', 'gold', or 'platinum'
+    let currentFilter = 'all';
     let currentPage = 1;
-    const pageSize = 10; // Exactly 10 records per page
+    const pageSize = 10;
 
     function toggleCardFilter(type) {
         if (currentFilter === type) {
@@ -270,7 +287,6 @@ $is_viewer = ($user_role === 'viewer');
         const pageInfo = document.getElementById('eventsPageInfo');
         const pageNav = document.getElementById('eventsPageNav');
 
-        // Reset visual card styling
         goldCard.classList.remove('ring-2', 'ring-amber-400', 'bg-amber-950/20');
         platCard.classList.remove('ring-2', 'ring-slate-300', 'bg-slate-800/50');
         goldBadge.classList.add('hidden');
@@ -288,7 +304,6 @@ $is_viewer = ($user_role === 'viewer');
             resetBtn.classList.add('hidden');
         }
 
-        // Filter rows by card type
         const matchingRows = rows.filter(row => {
             const rowType = row.getAttribute('data-type');
             return (currentFilter === 'all' || rowType === currentFilter);
@@ -349,9 +364,6 @@ $is_viewer = ($user_role === 'viewer');
         applyFilterAndPagination();
     });
 
-    // ========================================================
-    // DIRECT CSV EXPORT (With Excel Phone Formula Fix)
-    // ========================================================
     function exportToCSV() {
         const rows = document.querySelectorAll('#eventsTable tbody tr.event-row');
         let csvContent = "\uFEFFMember Name,Contact No,Card Type,Event,Date,Schedule\n";
@@ -362,9 +374,6 @@ $is_viewer = ($user_role === 'viewer');
             if (currentFilter !== 'all' && rowType !== currentFilter) return;
 
             const name = `"${(row.dataset.name || '').replace(/"/g, '""')}"`;
-
-            // Excel Phone Formula Fix:
-            // Prevents Excel from calculating "+1-555-0188" as "= 1 - 555 - 188 = -742"
             const rawPhone = (row.dataset.phone || '').trim();
             let phone = '""';
             if (rawPhone && rawPhone !== '-') {

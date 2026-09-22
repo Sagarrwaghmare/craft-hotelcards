@@ -61,3 +61,27 @@ lets see:
     
     exports do good pdf and csv -d
     make calendars filter look good... -d
+
+
+
+
+new tasks:
+add family members 'co-members' table, back and frontend, mulitple for one member 
+name, relationship(Wife, Husband, Son, Daughter, Father, Mother, Others), Contact no: , DOB:
+
+
+in member list: 
+    add col called total co members  
+
+in member details: 
+    add family members display above visitor details, When displaying the details of a co-member write Name of Co-Member + relation + of + Member Name 
+
+    In add visit details Change APC to Total Billing doubt
+    
+    In the Vistor Details panel display Total Billing & APC (Apc is total billing / visitors) doubt? should total billing be total bill and apc calculated on dashboard
+
+
+In export to CSV for members also export co-members data separtely. doubt? where in member details or in member list? and how to display co member with member in export? 
+
+
+another doubt... should co memebr/ family dob anniversary be shown in dashboard page?

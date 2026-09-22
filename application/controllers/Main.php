@@ -285,12 +285,26 @@ class Main extends CI_Controller
     public function members()
     {
         $this->load->model('Member_model');
+        $this->load->model('Comember_model');
 
         $data['title']          = 'Membership & Events Overview';
         $data['active_menu']    = 'members';
         $data['gold_count']     = $this->Member_model->count_by_type('Gold');
         $data['platinum_count'] = $this->Member_model->count_by_type('Platinum');
-        $data['events']         = $this->Member_model->get_upcoming_events(50);
+
+        $events = $this->Member_model->get_upcoming_events(50);
+
+        // Attach co-members count for each event's member
+        $co_counts = $this->Comember_model->get_counts_map();
+        if (!empty($events)) {
+            foreach ($events as &$ev) {
+                $mid = $ev['member_id'] ?? $ev['id'] ?? 0;
+                $ev['co_members_count'] = $co_counts[$mid] ?? 0;
+            }
+            unset($ev);
+        }
+
+        $data['events'] = $events;
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);
@@ -302,6 +316,7 @@ class Main extends CI_Controller
     public function members_list()
     {
         $this->load->model('Member_model');
+        $this->load->model('Comember_model');
 
         $data['title']       = 'Members Directory';
         $data['active_menu'] = 'members_list';
@@ -350,7 +365,18 @@ class Main extends CI_Controller
         $current_page = max(1, (int)$this->input->get('page'));
         $offset       = ($current_page - 1) * $per_page;
 
-        $data['members']      = $this->Member_model->get_filtered_members($filters, $per_page, $offset);
+        $members = $this->Member_model->get_filtered_members($filters, $per_page, $offset);
+
+        // Attach co-members count for the current paginated members
+        $member_ids = !empty($members) ? array_column($members, 'id') : [];
+        $co_counts  = !empty($member_ids) ? $this->Comember_model->get_counts_map($member_ids) : [];
+
+        foreach ($members as &$m) {
+            $m['co_members_count'] = $co_counts[$m['id']] ?? 0;
+        }
+        unset($m);
+
+        $data['members']      = $members;
         $data['total_count']  = $total_rows;
         $data['current_page'] = $current_page;
         $data['per_page']     = $per_page;
@@ -368,6 +394,7 @@ class Main extends CI_Controller
     public function export_members_csv()
     {
         $this->load->model('Member_model');
+        $this->load->model('Comember_model');
 
         // Unpack Date Ranges for CSV Export
         $dob_range = trim((string)$this->input->get('dob_range', TRUE));
@@ -404,10 +431,10 @@ class Main extends CI_Controller
         ];
 
         $members = $this->Member_model->get_filtered_members($filters);
+        $co_counts = $this->Comember_model->get_counts_map();
 
         $filename = 'members_export_' . date('Ymd_His') . '.csv';
 
-        // Fix 1: Wipe any buffered whitespace/newlines to eliminate the blank top line in Excel
         while (ob_get_level()) {
             ob_end_clean();
         }
@@ -418,17 +445,16 @@ class Main extends CI_Controller
         header('Expires: 0');
 
         $output = fopen('php://output', 'w');
-
-        // Add UTF-8 BOM so Excel opens international characters without inserting a blank line
         fputs($output, "\xEF\xBB\xBF");
 
-        // CSV Column Headers
+        // CSV Column Headers (includes Co-Members)
         fputcsv($output, [
             'Sr.No',
             'Card Number',
             'Card Type',
             'First Name',
             'Last Name',
+            'Co-Members',
             'Company',
             'Designation',
             'Contact No',
@@ -442,7 +468,6 @@ class Main extends CI_Controller
 
         $sr = 1;
         foreach ($members as $m) {
-            // Fix 2: Wrap phone and card numbers with ="..." to stop Excel evaluating them as math (e.g. 1-555-188 = -742)
             $phone = !empty($m['contact_no']) ? '="' . str_replace('"', '""', $m['contact_no']) . '"' : '-';
             $cardNumber = !empty($m['card_number']) ? '="' . str_replace('"', '""', $m['card_number']) . '"' : '-';
 
@@ -452,6 +477,7 @@ class Main extends CI_Controller
                 $m['card_type'],
                 $m['first_name'],
                 $m['last_name'],
+                $co_counts[$m['id']] ?? 0,
                 $m['company_name'] ?? '',
                 $m['designation'] ?? '',
                 $phone,
@@ -680,18 +706,6 @@ class Main extends CI_Controller
 
         $this->session->set_flashdata('success', 'Profile updated successfully!');
         redirect('main/profile');
-    }
-
-    public function co_members()
-    {
-        // testing... 
-        // works okay
-
-        $this->load->model('Comember_model');
-
-        $data = $this->Comember_model->get_all();
-
-        var_dump($data);
     }
 
     public function member_details($member_id = null)

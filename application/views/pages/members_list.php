@@ -143,6 +143,7 @@ $can_delete = $is_admin;
                         <th scope="col" class="py-3.5 px-6">Card No</th>
                         <th scope="col" class="py-3.5 px-6">Name</th>
                         <th scope="col" class="py-3.5 px-6">Subscription Type</th>
+                        <th scope="col" class="py-3.5 px-4 text-center">Co-Members</th>
                         <th scope="col" class="py-3.5 px-6">DOB</th>
                         <th scope="col" class="py-3.5 px-6">Anniversary</th>
                         <th scope="col" class="py-3.5 px-6 text-center w-28">Action</th>
@@ -151,7 +152,7 @@ $can_delete = $is_admin;
                 <tbody class="divide-y divide-darkBorder font-normal">
                     <?php if (empty($members)): ?>
                         <tr>
-                            <td colspan="<?= ($can_edit || $can_delete) ? 8 : 7 ?>" class="py-12 text-center text-slate-500">
+                            <td colspan="<?= ($can_edit || $can_delete) ? 9 : 8 ?>" class="py-12 text-center text-slate-500">
                                 <i class="fa-solid fa-users-slash text-3xl mb-2 block"></i>
                                 No members found matching your search and filter criteria.
                             </td>
@@ -163,6 +164,7 @@ $can_delete = $is_admin;
                             $full_name = trim($row['first_name'] . ' ' . $row['last_name']);
                             $dob_formatted = (!empty($row['dob']) && $row['dob'] !== '0000-00-00') ? date('d-M-Y', strtotime($row['dob'])) : '-';
                             $anni_formatted = (!empty($row['anniversary']) && $row['anniversary'] !== '0000-00-00') ? date('d-M-Y', strtotime($row['anniversary'])) : 'N/A';
+                            $co_count = (int)($row['co_members_count'] ?? 0);
                         ?>
                             <tr class="member-row hover:bg-slate-800/40 transition">
                                 <!-- Checkbox (Admin & Editor only) -->
@@ -202,6 +204,14 @@ $can_delete = $is_admin;
                                             <i class="fa-solid fa-gem text-[10px] mr-1"></i> Platinum
                                         </span>
                                     <?php endif; ?>
+                                </td>
+
+                                <!-- Co-Members Count Badge -->
+                                <td class="py-3.5 px-4 text-center">
+                                    <span class="co-count-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold <?= $co_count > 0 ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30' : 'bg-slate-800/60 text-slate-500 border border-slate-700/50' ?>">
+                                        <i class="fa-solid fa-people-roof text-[10px]"></i>
+                                        <?= $co_count ?>
+                                    </span>
                                 </td>
 
                                 <!-- DOB -->
@@ -272,16 +282,13 @@ $can_delete = $is_admin;
         <!-- SECTION 3: Bottom Actions Bar -->
         <div class="p-5 border-t border-darkBorder bg-darkCard flex flex-wrap items-center justify-between gap-4">
 
-            <!-- Left: Management Action Buttons -->
             <div class="flex items-center gap-2.5">
                 <?php if (!$is_viewer): ?>
-                    <!-- Add Member Button -->
                     <a href="<?= base_url('main/add_member') ?>"
                         class="bg-blue-600 hover:bg-blue-700 !text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/25 flex items-center gap-2">
                         <i class="fa-solid fa-plus text-xs"></i> Add
                     </a>
 
-                    <!-- Edit Button -->
                     <button type="button" id="editMembersBtn"
                         class="action-btn-edit bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-sm">
                         <i class="fa-regular fa-pen-to-square text-xs"></i> Edit
@@ -289,7 +296,6 @@ $can_delete = $is_admin;
                 <?php endif; ?>
 
                 <?php if ($can_delete): ?>
-                    <!-- Remove Selected Button (Admin Only) -->
                     <button type="button" id="deleteMembersBtn"
                         class="action-btn-remove bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold text-xs tracking-wider uppercase px-5 py-2.5 rounded-xl border border-red-500/30 transition flex items-center gap-2 shadow-sm">
                         <i class="fa-regular fa-trash-can text-xs"></i> Remove
@@ -303,7 +309,6 @@ $can_delete = $is_admin;
                 <?php endif; ?>
             </div>
 
-            <!-- Right: Export CSV Button -->
             <div>
                 <?php
                 $exportQuery = !empty($_GET) ? '?' . http_build_query($_GET) : '';
@@ -321,13 +326,12 @@ $can_delete = $is_admin;
 </form>
 
 <!-- ======================================================= -->
-<!-- MODAL: Bulk Edit Members (Only Gold & Platinum)         -->
+<!-- MODAL: Bulk Edit Members                                -->
 <!-- ======================================================= -->
 <?php if ($can_edit): ?>
     <div id="bulkEditModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 transition-all">
         <div class="w-full max-w-lg bg-darkCard border border-darkBorder rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-95 duration-200" id="bulkModalCard">
 
-            <!-- Header -->
             <div class="px-6 py-4 border-b border-darkBorder bg-[#0A1020] flex items-center justify-between">
                 <div>
                     <h3 class="text-base font-bold text-white tracking-wide flex items-center gap-2">
@@ -340,11 +344,9 @@ $can_delete = $is_admin;
                 </button>
             </div>
 
-            <!-- Form -->
             <form action="<?= base_url('main/bulk_update_members') ?>" method="POST" class="p-6 space-y-4">
                 <input type="hidden" name="bulk_member_ids" id="bulk_member_ids">
 
-                <!-- Field 1: Card Type (Gold / Platinum only) -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Card Type</label>
                     <div class="relative">
@@ -360,7 +362,6 @@ $can_delete = $is_admin;
                     </div>
                 </div>
 
-                <!-- Field 2: Company Name -->
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Company Name</label>
@@ -373,7 +374,6 @@ $can_delete = $is_admin;
                         class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition">
                 </div>
 
-                <!-- Field 3: Designation -->
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Designation</label>
@@ -386,7 +386,6 @@ $can_delete = $is_admin;
                         class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition">
                 </div>
 
-                <!-- Field 4: Marital Status -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Marital Status</label>
                     <div class="relative">
@@ -405,7 +404,6 @@ $can_delete = $is_admin;
                     </div>
                 </div>
 
-                <!-- Field 5: Notes -->
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Notes / Remarks</label>
@@ -418,7 +416,6 @@ $can_delete = $is_admin;
                         class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition"></textarea>
                 </div>
 
-                <!-- Modal Action Buttons -->
                 <div class="pt-4 border-t border-darkBorder flex items-center justify-end gap-3">
                     <button type="button" id="closeBulkModalBtn"
                         class="bg-transparent hover:bg-slate-800 text-slate-300 text-xs font-semibold uppercase tracking-wider px-5 py-2.5 rounded-xl border border-darkBorder transition">
@@ -448,6 +445,13 @@ $can_delete = $is_admin;
         background-color: #f1f5f9 !important;
     }
 
+    /* Co-Members Badge in Light Mode */
+    html.light .co-count-badge {
+        background-color: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+        color: #334155 !important;
+    }
+
     /* Table Rows Text in Light Mode */
     html.light .row-name {
         color: #0f172a !important;
@@ -457,6 +461,35 @@ $can_delete = $is_admin;
     html.light .row-dob,
     html.light .row-anniv {
         color: #64748b !important;
+    }
+
+    /* ========================================================
+       ROW HOVER & SELECTION (LIGHT MODE FIX)
+       ======================================================== */
+    html.light .member-row:hover {
+        background-color: #f1f5f9 !important;
+    }
+
+    html.light .member-row:hover .row-name {
+        color: #0f172a !important;
+    }
+
+    html.light .member-row:hover .row-phone,
+    html.light .member-row:hover .row-dob,
+    html.light .member-row:hover .row-anniv {
+        color: #475569 !important;
+    }
+
+    html.light .member-row:hover .font-mono.text-slate-500 {
+        color: #64748b !important;
+    }
+
+    html.light tr.bg-blue-600\/10 {
+        background-color: #eff6ff !important;
+    }
+
+    html.light tr.bg-blue-600\/10:hover {
+        background-color: #dbeafe !important;
     }
 
     /* Edit Button in Light Mode */
@@ -552,8 +585,6 @@ $can_delete = $is_admin;
     /* ========================================================
        FLATPICKR COMPLETE THEME FIX (DARK & LIGHT MODES)
        ======================================================== */
-
-    /* 1. Base Calendar Container */
     .flatpickr-calendar {
         background: #111C38 !important;
         border: 1px solid #1E2945 !important;
@@ -563,7 +594,6 @@ $can_delete = $is_admin;
         overflow: hidden !important;
     }
 
-    /* Remove the white default top/bottom pointer arrow */
     .flatpickr-calendar.arrowTop:before,
     .flatpickr-calendar.arrowTop:after {
         border-bottom-color: #0A1020 !important;
@@ -574,7 +604,6 @@ $can_delete = $is_admin;
         border-top-color: #111C38 !important;
     }
 
-    /* 2. Month & Year Header */
     .flatpickr-months {
         background: #0A1020 !important;
         padding-top: 8px !important;
@@ -586,7 +615,6 @@ $can_delete = $is_admin;
         font-weight: 700 !important;
     }
 
-    /* Fix: Month Dropdown Options in Dark Mode (No more white-on-white menu) */
     .flatpickr-current-month .flatpickr-monthDropdown-months {
         background: transparent !important;
         color: #ffffff !important;
@@ -619,7 +647,6 @@ $can_delete = $is_admin;
         border-top-color: #ffffff !important;
     }
 
-    /* Navigation Arrows */
     .flatpickr-months .flatpickr-prev-month,
     .flatpickr-months .flatpickr-next-month {
         color: #94a3b8 !important;
@@ -632,7 +659,6 @@ $can_delete = $is_admin;
         fill: #38bdf8 !important;
     }
 
-    /* Weekday Headers */
     span.flatpickr-weekday {
         background: #0A1020 !important;
         color: #64748b !important;
@@ -641,7 +667,6 @@ $can_delete = $is_admin;
         text-transform: uppercase !important;
     }
 
-    /* 3. Days Container & Neutral Days */
     .flatpickr-innerContainer,
     .flatpickr-rContainer,
     .flatpickr-days {
@@ -665,15 +690,12 @@ $can_delete = $is_admin;
         color: #475569 !important;
     }
 
-    /* Fix: In-Range Days (Removes the white arc brackets!) */
     .flatpickr-day.inRange {
         background: #1e3a8a !important;
-        /* Soft deep royal blue */
         color: #bfdbfe !important;
         border-color: transparent !important;
         border-radius: 0 !important;
         box-shadow: -5px 0 0 #1e3a8a, 5px 0 0 #1e3a8a !important;
-        /* Overrides default #e6e6e6 white shadows! */
     }
 
     .flatpickr-day.startRange {
@@ -703,9 +725,6 @@ $can_delete = $is_admin;
         border-color: #38bdf8 !important;
     }
 
-    /* ========================================================
-       FLATPICKR IN LIGHT MODE
-       ======================================================== */
     html.light .flatpickr-calendar {
         background: #ffffff !important;
         border: 1px solid #e2e8f0 !important;
@@ -799,23 +818,20 @@ $can_delete = $is_admin;
         box-shadow: -2px 0 0 #eff6ff !important;
     }
 </style>
-
 <!-- Checkbox Selection, Single Edit, Bulk Edit, & Flatpickr Range Calendar Scripts -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Flatpickr Range Calendar on DOB & Anniversary
         const flatpickrCommon = {
             mode: "range",
-            dateFormat: "Y-m-d", // Form submits standard parseable date
+            dateFormat: "Y-m-d",
             altInput: true,
-            altFormat: "d-M", // User visually sees "15-Mar to 25-Apr" (No year clutter!)
+            altFormat: "d-M",
             altInputClass: "w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition cursor-pointer font-medium"
         };
 
         flatpickr("#dob_range", flatpickrCommon);
         flatpickr("#anniv_range", flatpickrCommon);
 
-        // Checkbox & Selection elements
         const selectAll = document.getElementById('selectAllMembersCheckbox');
         const rowCheckboxes = document.querySelectorAll('.member-checkbox');
         const batchForm = document.getElementById('membersBatchForm');
@@ -859,7 +875,6 @@ $can_delete = $is_admin;
             });
         }
 
-        // Master select / unselect all
         if (selectAll) {
             selectAll.addEventListener('change', function() {
                 rowCheckboxes.forEach(cb => {
@@ -869,7 +884,6 @@ $can_delete = $is_admin;
             });
         }
 
-        // Row checkbox toggle
         rowCheckboxes.forEach(cb => {
             cb.addEventListener('change', function() {
                 toggleRowHighlight(this);
@@ -888,9 +902,6 @@ $can_delete = $is_admin;
             }
         }
 
-        // Edit button click logic:
-        // 1 selected -> Navigates to full single member edit screen
-        // >1 selected -> Opens the Bulk Edit Modal
         if (editBtn) {
             editBtn.addEventListener('click', function() {
                 const checked = document.querySelectorAll('.member-checkbox:checked');
@@ -909,7 +920,6 @@ $can_delete = $is_admin;
             });
         }
 
-        // Delete button click logic (Admin Only)
         if (deleteBtn) {
             deleteBtn.addEventListener('click', function() {
                 const checked = document.querySelectorAll('.member-checkbox:checked');
