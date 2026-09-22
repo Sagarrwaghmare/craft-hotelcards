@@ -565,42 +565,6 @@ class Main extends CI_Controller
         redirect('main/users');
     }
 
-    public function member_details($member_id = null)
-    {
-        if (empty($member_id)) {
-            redirect('main/members_list');
-        }
-
-        $this->load->model('Member_model');
-        $this->load->model('Visit_model');
-
-        $data['title']       = 'Member Details';
-        $data['active_menu'] = 'members_list';
-
-        $data['member']      = $this->Member_model->get_by_id($member_id);
-        if (empty($data['member'])) {
-            show_404();
-        }
-
-        $v_per_page   = 10;
-        $v_page       = max(1, (int)$this->input->get('vpage'));
-        $v_offset     = ($v_page - 1) * $v_per_page;
-        $total_visits = $this->Visit_model->count_by_member_id($member_id);
-
-        $data['visits']         = $this->Visit_model->get_by_member_id($member_id, $v_per_page, $v_offset);
-        $data['total_visits']   = $total_visits;
-        $data['v_current_page'] = $v_page;
-        $data['v_per_page']     = $v_per_page;
-        $data['v_total_pages']  = max(1, ceil($total_visits / $v_per_page));
-        $data['summary']        = $this->Visit_model->get_member_summary($member_id);
-
-        $this->load->view('templates/header', $data);
-        $this->load->view('templates/sidebar', $data);
-        $this->load->view('templates/navbar', $data);
-        $this->load->view('pages/member_details', $data);
-        $this->load->view('templates/footer', $data);
-    }
-
     public function add_visit()
     {
         $role = strtolower(trim((string)$this->session->userdata('access')));
@@ -716,5 +680,164 @@ class Main extends CI_Controller
 
         $this->session->set_flashdata('success', 'Profile updated successfully!');
         redirect('main/profile');
+    }
+
+    public function co_members()
+    {
+        // testing... 
+        // works okay
+
+        $this->load->model('Comember_model');
+
+        $data = $this->Comember_model->get_all();
+
+        var_dump($data);
+    }
+
+    public function member_details($member_id = null)
+    {
+        if (empty($member_id)) {
+            redirect('main/members_list');
+        }
+
+        $this->load->model('Member_model');
+        $this->load->model('Visit_model');
+        $this->load->model('Comember_model');
+
+        $data['title']       = 'Member Details';
+        $data['active_menu'] = 'members_list';
+
+        $data['member']      = $this->Member_model->get_by_id($member_id);
+        if (empty($data['member'])) {
+            show_404();
+        }
+
+        // --- Co-Members Pagination (10 per page, param: cpage) ---
+        $c_per_page      = 10;
+        $c_page          = max(1, (int)$this->input->get('cpage'));
+        $c_offset        = ($c_page - 1) * $c_per_page;
+        $total_comembers = $this->Comember_model->count_by_member($member_id);
+
+        $data['comembers']         = $this->Comember_model->get_by_member_id($member_id, $c_per_page, $c_offset);
+        $data['total_comembers']   = $total_comembers;
+        $data['c_current_page']    = $c_page;
+        $data['c_per_page']        = $c_per_page;
+        $data['c_total_pages']     = max(1, ceil($total_comembers / $c_per_page));
+
+        // --- Visits Pagination (10 per page, param: vpage) ---
+        $v_per_page   = 10;
+        $v_page       = max(1, (int)$this->input->get('vpage'));
+        $v_offset     = ($v_page - 1) * $v_per_page;
+        $total_visits = $this->Visit_model->count_by_member_id($member_id);
+
+        $data['visits']         = $this->Visit_model->get_by_member_id($member_id, $v_per_page, $v_offset);
+        $data['total_visits']   = $total_visits;
+        $data['v_current_page'] = $v_page;
+        $data['v_per_page']     = $v_per_page;
+        $data['v_total_pages']  = max(1, ceil($total_visits / $v_per_page));
+        $data['summary']        = $this->Visit_model->get_member_summary($member_id);
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('templates/navbar', $data);
+        $this->load->view('pages/member_details', $data);
+        $this->load->view('templates/footer', $data);
+    }
+
+    public function save_co_member()
+    {
+        $role = strtolower(trim((string)$this->session->userdata('access')));
+        if ($role === 'viewer') {
+            $this->session->set_flashdata('error', 'Viewers cannot add or modify co-members.');
+            redirect('main/members_list');
+            return;
+        }
+
+        $this->load->model('Comember_model');
+
+        $id           = (int)$this->input->post('co_member_id', TRUE);
+        $member_id    = (int)$this->input->post('member_id', TRUE);
+        $name         = trim((string)$this->input->post('name', TRUE));
+        $relationship = $this->input->post('relationship', TRUE);
+        $contact_no   = trim((string)$this->input->post('contact_no', TRUE));
+        $dob          = $this->input->post('dob', TRUE);
+
+        if (empty($name) || empty($relationship) || empty($member_id)) {
+            $this->session->set_flashdata('error', 'Name and Relationship are required.');
+            redirect('main/member_details/' . $member_id);
+            return;
+        }
+
+        $allowed_relationships = ['Wife', 'Husband', 'Son', 'Daughter', 'Father', 'Mother', 'Others'];
+        if (!in_array($relationship, $allowed_relationships)) {
+            $relationship = 'Others';
+        }
+
+        $data = [
+            'member_id'    => $member_id,
+            'name'         => $name,
+            'relationship' => $relationship,
+            'contact_no'   => !empty($contact_no) ? $contact_no : null,
+            'dob'          => !empty($dob) ? $dob : null,
+        ];
+
+        if ($id > 0) {
+            $this->Comember_model->update($id, $data);
+            $this->session->set_flashdata('success', 'Co-Member updated successfully.');
+        } else {
+            $this->Comember_model->insert($data);
+            $this->session->set_flashdata('success', 'Co-Member added successfully.');
+        }
+
+        redirect('main/member_details/' . $member_id);
+    }
+
+    public function delete_co_member($id = null, $member_id = null)
+    {
+        $role = strtolower(trim((string)$this->session->userdata('access')));
+        if (!in_array($role, ['admin', 'editor'])) {
+            $this->session->set_flashdata('error', 'Permission denied.');
+            redirect('main/members_list');
+            return;
+        }
+
+        $this->load->model('Comember_model');
+
+        if (!empty($id)) {
+            $this->Comember_model->delete((int)$id);
+            $this->session->set_flashdata('success', 'Co-member removed successfully.');
+        }
+
+        redirect('main/member_details/' . (int)$member_id);
+    }
+
+    public function delete_batch_co_members()
+    {
+        $role = strtolower(trim((string)$this->session->userdata('access')));
+        if (!in_array($role, ['admin', 'editor'])) {
+            $this->session->set_flashdata('error', 'Permission denied.');
+            redirect('main/members_list');
+            return;
+        }
+
+        $this->load->model('Comember_model');
+
+        $member_id    = (int)$this->input->post('member_id', TRUE);
+        $selected_ids = $this->input->post('selected_co_members');
+
+        if (!empty($selected_ids) && is_array($selected_ids)) {
+            $sanitized_ids = array_map('intval', $selected_ids);
+            $deleted = $this->Comember_model->delete_batch_ids($sanitized_ids);
+
+            if ($deleted) {
+                $this->session->set_flashdata('success', count($sanitized_ids) . ' co-member(s) removed successfully.');
+            } else {
+                $this->session->set_flashdata('error', 'Failed to remove selected co-members.');
+            }
+        } else {
+            $this->session->set_flashdata('error', 'No co-members were selected for deletion.');
+        }
+
+        redirect('main/member_details/' . $member_id);
     }
 }
