@@ -367,7 +367,7 @@ class Main extends CI_Controller
 
         $members = $this->Member_model->get_filtered_members($filters, $per_page, $offset);
 
-        // Attach co-members count for the current paginated members
+        // Attach co-members count for current page
         $member_ids = !empty($members) ? array_column($members, 'id') : [];
         $co_counts  = !empty($member_ids) ? $this->Comember_model->get_counts_map($member_ids) : [];
 
@@ -390,7 +390,7 @@ class Main extends CI_Controller
         $this->load->view('templates/footer', $data);
     }
 
-    // Export members matching current active filters to CSV
+    // Export members matching current active filters to CSV (supports standard & with co-members)
     public function export_members_csv()
     {
         $this->load->model('Member_model');
@@ -431,10 +431,27 @@ class Main extends CI_Controller
         ];
 
         $members = $this->Member_model->get_filtered_members($filters);
-        $co_counts = $this->Comember_model->get_counts_map();
+        $with_comembers = ($this->input->get('with_comembers', TRUE) === '1');
 
-        $filename = 'members_export_' . date('Ymd_His') . '.csv';
+        $co_members_by_member = [];
+        $co_counts = [];
 
+        if (!empty($members)) {
+            $member_ids = array_column($members, 'id');
+            $co_counts  = $this->Comember_model->get_counts_map($member_ids);
+
+            if ($with_comembers) {
+                $all_comembers = $this->Comember_model->get_by_member_ids($member_ids);
+                foreach ($all_comembers as $cm) {
+                    $co_members_by_member[$cm['member_id']][] = $cm;
+                }
+            }
+        }
+
+        $suffix = $with_comembers ? '_with_comembers_' : '_';
+        $filename = 'members_export' . $suffix . date('Ymd_His') . '.csv';
+
+        // Clear output buffer to eliminate any blank top line in Excel
         while (ob_get_level()) {
             ob_end_clean();
         }
@@ -445,16 +462,16 @@ class Main extends CI_Controller
         header('Expires: 0');
 
         $output = fopen('php://output', 'w');
-        fputs($output, "\xEF\xBB\xBF");
+        fputs($output, "\xEF\xBB\xBF"); // UTF-8 BOM
 
-        // CSV Column Headers (includes Co-Members)
+        // CSV Column Headers
         fputcsv($output, [
             'Sr.No',
             'Card Number',
-            'Card Type',
-            'First Name',
+            'Card Type / Relation',
+            'First Name / Name',
             'Last Name',
-            'Co-Members',
+            'Co-Members Count',
             'Company',
             'Designation',
             'Contact No',
@@ -470,14 +487,16 @@ class Main extends CI_Controller
         foreach ($members as $m) {
             $phone = !empty($m['contact_no']) ? '="' . str_replace('"', '""', $m['contact_no']) . '"' : '-';
             $cardNumber = !empty($m['card_number']) ? '="' . str_replace('"', '""', $m['card_number']) . '"' : '-';
+            $count = $co_counts[$m['id']] ?? 0;
 
+            // 1. Output Member Row (with Sr.No)
             fputcsv($output, [
                 $sr++,
                 $cardNumber,
                 $m['card_type'],
                 $m['first_name'],
                 $m['last_name'],
-                $co_counts[$m['id']] ?? 0,
+                $count,
                 $m['company_name'] ?? '',
                 $m['designation'] ?? '',
                 $phone,
@@ -488,6 +507,32 @@ class Main extends CI_Controller
                 $m['marital_status'] ?? '',
                 $m['created_at'] ?? ''
             ]);
+
+            // 2. If Export with Co-Members selected, output co-members directly beneath this member
+            if ($with_comembers && !empty($co_members_by_member[$m['id']])) {
+                foreach ($co_members_by_member[$m['id']] as $cm) {
+                    $cmPhone = !empty($cm['contact_no']) ? '="' . str_replace('"', '""', $cm['contact_no']) . '"' : '-';
+                    $cmDob = (!empty($cm['dob']) && $cm['dob'] !== '0000-00-00') ? date('d-M-Y', strtotime($cm['dob'])) : '';
+
+                    fputcsv($output, [
+                        '', // No Sr.No for co-members
+                        '', // Empty Card Number
+                        'Co-Member (' . $cm['relationship'] . ')',
+                        '↳ ' . $cm['name'], // Indented tree indicator
+                        '',
+                        '',
+                        '',
+                        '',
+                        $cmPhone,
+                        '',
+                        '',
+                        $cmDob,
+                        '',
+                        '',
+                        $cm['created_at'] ?? ''
+                    ]);
+                }
+            }
         }
 
         fclose($output);
@@ -726,7 +771,6 @@ class Main extends CI_Controller
             show_404();
         }
 
-        // --- Co-Members Pagination (10 per page, param: cpage) ---
         $c_per_page      = 10;
         $c_page          = max(1, (int)$this->input->get('cpage'));
         $c_offset        = ($c_page - 1) * $c_per_page;
@@ -738,7 +782,6 @@ class Main extends CI_Controller
         $data['c_per_page']        = $c_per_page;
         $data['c_total_pages']     = max(1, ceil($total_comembers / $c_per_page));
 
-        // --- Visits Pagination (10 per page, param: vpage) ---
         $v_per_page   = 10;
         $v_page       = max(1, (int)$this->input->get('vpage'));
         $v_offset     = ($v_page - 1) * $v_per_page;

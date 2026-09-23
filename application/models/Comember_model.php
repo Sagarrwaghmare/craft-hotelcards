@@ -36,6 +36,19 @@ class Comember_model extends CI_Model
         return $this->db->get($this->table)->result_array();
     }
 
+    /**
+     * Fetch all co-members belonging to an array of member IDs
+     */
+    public function get_by_member_ids($member_ids = [])
+    {
+        if (empty($member_ids)) {
+            return [];
+        }
+        $this->db->where_in('member_id', array_map('intval', $member_ids));
+        $this->db->order_by('id', 'ASC');
+        return $this->db->get($this->table)->result_array();
+    }
+
     public function count_by_member($member_id)
     {
         $this->db->where('member_id', (int) $member_id);
@@ -93,6 +106,7 @@ class Comember_model extends CI_Model
         $this->db->where_in('id', $ids);
         return $this->db->delete($this->table);
     }
+
     public function get_counts_map($member_ids = [])
     {
         $this->db->select('member_id, COUNT(*) as total');

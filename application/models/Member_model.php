@@ -29,13 +29,11 @@ class Member_model extends CI_Model
         return $query->row_array();
     }
 
-    // Count members by card type (Gold, Platinum)
     public function count_by_type($type)
     {
         return $this->db->where('card_type', $type)->count_all_results($this->table);
     }
 
-    // Fetch upcoming birthdays and anniversaries starting from today
     public function get_upcoming_events($limit = 20)
     {
         $this->db->where('dob IS NOT NULL', null, false);
@@ -49,7 +47,6 @@ class Member_model extends CI_Model
         foreach ($members as $m) {
             $fullName = trim($m['first_name'] . ' ' . $m['last_name']);
 
-            // 1. Process Birthday
             if (!empty($m['dob']) && $m['dob'] !== '0000-00-00') {
                 $dob = new DateTime($m['dob']);
                 $eventDate = new DateTime("{$currentYear}-{$dob->format('m-d')}");
@@ -71,7 +68,6 @@ class Member_model extends CI_Model
                 ];
             }
 
-            // 2. Process Anniversary
             if (!empty($m['anniversary']) && $m['anniversary'] !== '0000-00-00') {
                 $anni = new DateTime($m['anniversary']);
                 $eventDate = new DateTime("{$currentYear}-{$anni->format('m-d')}");
@@ -101,23 +97,19 @@ class Member_model extends CI_Model
         return array_slice($events, 0, $limit);
     }
 
-    // Helper to sanitize MM-DD format from inputs
     private function _extract_mmdd($val)
     {
         $val = trim((string)$val);
         if (empty($val)) return null;
 
-        // If YYYY-MM-DD was passed
         if (preg_match('/^\d{4}-(\d{2}-\d{2})$/', $val, $m)) {
             return $m[1];
         }
 
-        // If MM-DD (e.g. 05-15)
         if (preg_match('/^(\d{1,2})-(\d{1,2})$/', $val, $m)) {
             return sprintf('%02d-%02d', $m[1], $m[2]);
         }
 
-        // If MM/DD (e.g. 05/15)
         if (preg_match('/^(\d{1,2})\/(\d{1,2})$/', $val, $m)) {
             return sprintf('%02d-%02d', $m[1], $m[2]);
         }
@@ -125,7 +117,6 @@ class Member_model extends CI_Model
         return null;
     }
 
-    // Apply filters helper (comparing only month & day for DOB and Anniversary)
     private function _apply_filters($filters = [])
     {
         if (!empty($filters['search'])) {
@@ -143,7 +134,6 @@ class Member_model extends CI_Model
             $this->db->where('card_type', $filters['type']);
         }
 
-        // Month-Day matching for DOB (year-independent)
         $dob_from = $this->_extract_mmdd($filters['dob_from'] ?? '');
         $dob_to   = $this->_extract_mmdd($filters['dob_to'] ?? '');
 
@@ -152,7 +142,6 @@ class Member_model extends CI_Model
                 $this->db->where("DATE_FORMAT(dob, '%m-%d') >=", $dob_from);
                 $this->db->where("DATE_FORMAT(dob, '%m-%d') <=", $dob_to);
             } else {
-                // Handles year-end wrap around (e.g., Dec to Jan)
                 $this->db->group_start();
                 $this->db->where("DATE_FORMAT(dob, '%m-%d') >=", $dob_from);
                 $this->db->or_where("DATE_FORMAT(dob, '%m-%d') <=", $dob_to);
@@ -164,7 +153,6 @@ class Member_model extends CI_Model
             $this->db->where("DATE_FORMAT(dob, '%m-%d') <=", $dob_to);
         }
 
-        // Month-Day matching for Anniversary (year-independent)
         $anniv_from = $this->_extract_mmdd($filters['anniv_from'] ?? '');
         $anniv_to   = $this->_extract_mmdd($filters['anniv_to'] ?? '');
 

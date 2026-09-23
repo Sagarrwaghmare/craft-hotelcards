@@ -131,7 +131,7 @@ $can_delete = $is_admin;
             <table class="w-full text-left text-sm text-slate-300">
                 <thead class="members-table-head text-[11px] uppercase tracking-wider text-slate-400 bg-[#0A1020] border-b border-darkBorder font-bold">
                     <tr>
-                        <!-- Select All Checkbox (Admin & Editor only) -->
+                        <!-- Select All Checkbox -->
                         <?php if ($can_edit || $can_delete): ?>
                             <th scope="col" class="py-3.5 px-4 w-12 text-center">
                                 <input type="checkbox" id="selectAllMembersCheckbox"
@@ -167,7 +167,6 @@ $can_delete = $is_admin;
                             $co_count = (int)($row['co_members_count'] ?? 0);
                         ?>
                             <tr class="member-row hover:bg-slate-800/40 transition">
-                                <!-- Checkbox (Admin & Editor only) -->
                                 <?php if ($can_edit || $can_delete): ?>
                                     <td class="py-3.5 px-4 text-center">
                                         <input type="checkbox" name="selected_members[]" value="<?= $row['id'] ?>"
@@ -175,17 +174,14 @@ $can_delete = $is_admin;
                                     </td>
                                 <?php endif; ?>
 
-                                <!-- Sr.No -->
                                 <td class="py-3.5 px-5 text-center font-mono text-xs text-slate-500">
                                     <?= $sr_offset + $index + 1 ?>
                                 </td>
 
-                                <!-- Card Number -->
                                 <td class="py-3.5 px-6 font-mono text-xs text-blue-400 font-semibold">
                                     <?= htmlspecialchars($row['card_number']) ?>
                                 </td>
 
-                                <!-- Member Name & Contact -->
                                 <td class="py-3.5 px-6 font-semibold text-white">
                                     <div class="row-name font-semibold text-white"><?= htmlspecialchars($full_name) ?></div>
                                     <?php if (!empty($row['contact_no'])): ?>
@@ -193,7 +189,6 @@ $can_delete = $is_admin;
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Type Badge (Gold / Platinum only) -->
                                 <td class="py-3.5 px-6">
                                     <?php if (strtolower($row['card_type']) === 'gold'): ?>
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/30">
@@ -206,7 +201,6 @@ $can_delete = $is_admin;
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Co-Members Count Badge -->
                                 <td class="py-3.5 px-4 text-center">
                                     <span class="co-count-badge inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold <?= $co_count > 0 ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30' : 'bg-slate-800/60 text-slate-500 border border-slate-700/50' ?>">
                                         <i class="fa-solid fa-people-roof text-[10px]"></i>
@@ -214,17 +208,14 @@ $can_delete = $is_admin;
                                     </span>
                                 </td>
 
-                                <!-- DOB -->
                                 <td class="py-3.5 px-6 font-mono text-xs text-slate-300 row-dob">
                                     <?= $dob_formatted ?>
                                 </td>
 
-                                <!-- Anniversary -->
                                 <td class="py-3.5 px-6 font-mono text-xs text-slate-300 row-anniv">
                                     <?= $anni_formatted ?>
                                 </td>
 
-                                <!-- Action: View Button -->
                                 <td class="py-3.5 px-6 text-center">
                                     <a href="<?= base_url('main/member_details/' . $row['id']) ?>"
                                         class="view-action-btn inline-flex items-center gap-1.5 bg-[#0A1020] hover:bg-blue-600 text-slate-300 hover:text-white border border-darkBorder hover:border-blue-500 text-xs font-medium px-3 py-1.5 rounded-lg transition shadow-sm">
@@ -239,7 +230,7 @@ $can_delete = $is_admin;
             </table>
         </div>
 
-        <!-- Pagination Bar (Default: 10 rows per page) -->
+        <!-- Pagination Bar -->
         <?php if (isset($total_pages) && $total_pages > 1): ?>
             <?php
             $queryParams = $_GET;
@@ -309,21 +300,81 @@ $can_delete = $is_admin;
                 <?php endif; ?>
             </div>
 
+            <!-- Right: Open Export Options Modal Button -->
             <div>
-                <?php
-                $exportQuery = !empty($_GET) ? '?' . http_build_query($_GET) : '';
-                ?>
-                <a href="<?= base_url('main/export_members_csv' . $exportQuery) ?>"
+                <button type="button" id="openExportModalBtn"
                     class="export-btn bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs tracking-wider uppercase px-6 py-2.5 rounded-xl border border-darkBorder transition flex items-center gap-2 shadow-md">
                     <i class="fa-solid fa-file-arrow-down text-sm text-emerald-400"></i>
                     <span>Export CSV</span>
-                </a>
+                </button>
             </div>
 
         </div>
 
     </div>
 </form>
+
+<!-- ======================================================= -->
+<!-- MODAL: CSV Export Options                               -->
+<!-- ======================================================= -->
+<div id="exportModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 transition-all">
+    <div class="w-full max-w-md bg-darkCard border border-darkBorder rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-95 duration-200 modal-box" id="exportModalCard">
+
+        <div class="px-6 py-4 border-b border-darkBorder bg-[#0A1020] flex items-center justify-between modal-header">
+            <h3 class="text-base font-bold text-white tracking-wide flex items-center gap-2">
+                <i class="fa-solid fa-file-csv text-emerald-400"></i>
+                <span>Export Members to CSV</span>
+            </h3>
+            <button type="button" id="closeExportCross" class="text-slate-400 hover:text-white text-lg focus:outline-none modal-close-btn">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+            <p class="text-xs text-slate-400">
+                Choose how you would like to structure the exported CSV file for the current filtered members:
+            </p>
+
+            <!-- Option 1: Standard Direct Export -->
+            <label class="export-option-card flex items-start gap-3 p-3.5 rounded-xl border border-darkBorder bg-[#0A1020] cursor-pointer hover:border-blue-500 transition">
+                <input type="radio" name="export_type" value="standard" checked class="mt-0.5 text-blue-600 focus:ring-0">
+                <div class="flex-1">
+                    <div class="text-sm font-semibold text-white option-title flex items-center gap-2">
+                        <span>Standard Member Export</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/30">Default</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Exports primary members only (1 row per member record).</p>
+                </div>
+            </label>
+
+            <!-- Option 2: Export with Co-Members -->
+            <label class="export-option-card flex items-start gap-3 p-3.5 rounded-xl border border-darkBorder bg-[#0A1020] cursor-pointer hover:border-indigo-500 transition">
+                <input type="radio" name="export_type" value="with_comembers" class="mt-0.5 text-indigo-600 focus:ring-0">
+                <div class="flex-1">
+                    <div class="text-sm font-semibold text-white option-title flex items-center gap-2">
+                        <span>Export with Co-Members</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">Multi-Row</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Lists family / co-members directly beneath each member without repeating the Sr.No.</p>
+                </div>
+            </label>
+
+            <!-- Modal Action Buttons -->
+            <div class="pt-4 border-t border-darkBorder flex items-center justify-end gap-3 modal-footer">
+                <button type="button" id="closeExportBtn"
+                    class="btn-modal-cancel bg-transparent hover:bg-slate-800 text-slate-300 text-xs font-semibold uppercase tracking-wider px-5 py-2.5 rounded-xl border border-darkBorder transition">
+                    Cancel
+                </button>
+                <button type="button" id="startExportBtn"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold uppercase tracking-wider px-6 py-2.5 rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
+                    <i class="fa-solid fa-download text-xs"></i>
+                    <span>Download CSV</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
 
 <!-- ======================================================= -->
 <!-- MODAL: Bulk Edit Members                                -->
@@ -463,9 +514,7 @@ $can_delete = $is_admin;
         color: #64748b !important;
     }
 
-    /* ========================================================
-       ROW HOVER & SELECTION (LIGHT MODE FIX)
-       ======================================================== */
+    /* Row Hover & Selection */
     html.light .member-row:hover {
         background-color: #f1f5f9 !important;
     }
@@ -559,6 +608,51 @@ $can_delete = $is_admin;
         color: #ffffff !important;
     }
 
+    /* Export Modal in Light Mode */
+    html.light .modal-box {
+        background-color: #ffffff !important;
+        border-color: #e2e8f0 !important;
+    }
+
+    html.light .modal-header,
+    html.light .modal-footer {
+        background-color: #f8fafc !important;
+        border-color: #e2e8f0 !important;
+    }
+
+    html.light .modal-close-btn {
+        color: #64748b !important;
+    }
+
+    html.light .modal-close-btn:hover {
+        color: #0f172a !important;
+    }
+
+    html.light .export-option-card {
+        background-color: #f8fafc !important;
+        border-color: #e2e8f0 !important;
+    }
+
+    html.light .export-option-card:hover {
+        border-color: #2563eb !important;
+        background-color: #ffffff !important;
+    }
+
+    html.light .option-title {
+        color: #0f172a !important;
+    }
+
+    html.light .btn-modal-cancel {
+        background-color: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        color: #475569 !important;
+    }
+
+    html.light .btn-modal-cancel:hover {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+    }
+
     /* Pagination in Light Mode */
     html.light #membersPaginationBar {
         background-color: #ffffff !important;
@@ -582,9 +676,7 @@ $can_delete = $is_admin;
         color: #0f172a !important;
     }
 
-    /* ========================================================
-       FLATPICKR COMPLETE THEME FIX (DARK & LIGHT MODES)
-       ======================================================== */
+    /* Flatpickr Calendar */
     .flatpickr-calendar {
         background: #111C38 !important;
         border: 1px solid #1E2945 !important;
@@ -818,7 +910,8 @@ $can_delete = $is_admin;
         box-shadow: -2px 0 0 #eff6ff !important;
     }
 </style>
-<!-- Checkbox Selection, Single Edit, Bulk Edit, & Flatpickr Range Calendar Scripts -->
+
+<!-- Scripts: Filter, Flatpickr, Batch Form, & Export Modal -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const flatpickrCommon = {
@@ -838,6 +931,63 @@ $can_delete = $is_admin;
         const editBtn = document.getElementById('editMembersBtn');
         const deleteBtn = document.getElementById('deleteMembersBtn');
 
+        // --- Export Modal Handling ---
+        const exportModal = document.getElementById('exportModal');
+        const exportCard = document.getElementById('exportModalCard');
+        const openExportBtn = document.getElementById('openExportModalBtn');
+        const closeExportCross = document.getElementById('closeExportCross');
+        const closeExportBtn = document.getElementById('closeExportBtn');
+        const startExportBtn = document.getElementById('startExportBtn');
+
+        function openExportModal() {
+            if (!exportModal) return;
+            exportModal.classList.remove('hidden');
+            setTimeout(() => {
+                exportCard.classList.remove('scale-95');
+                exportCard.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeExportModal() {
+            if (!exportModal) return;
+            exportCard.classList.remove('scale-100');
+            exportCard.classList.add('scale-95');
+            setTimeout(() => {
+                exportModal.classList.add('hidden');
+            }, 150);
+        }
+
+        if (openExportBtn) openExportBtn.addEventListener('click', openExportModal);
+        if (closeExportCross) closeExportCross.addEventListener('click', closeExportModal);
+        if (closeExportBtn) closeExportBtn.addEventListener('click', closeExportModal);
+        if (exportModal) {
+            exportModal.addEventListener('click', function(e) {
+                if (e.target === exportModal) closeExportModal();
+            });
+        }
+
+        // Trigger CSV download preserving active filters
+        if (startExportBtn) {
+            startExportBtn.addEventListener('click', function() {
+                const selectedOption = document.querySelector('input[name="export_type"]:checked')?.value || 'standard';
+                const currentParams = new URLSearchParams(window.location.search);
+                currentParams.delete('page'); // Export all matching rows
+
+                if (selectedOption === 'with_comembers') {
+                    currentParams.set('with_comembers', '1');
+                } else {
+                    currentParams.delete('with_comembers');
+                }
+
+                const queryStr = currentParams.toString();
+                const exportUrl = '<?= base_url("main/export_members_csv") ?>' + (queryStr ? '?' + queryStr : '');
+
+                closeExportModal();
+                window.location.href = exportUrl;
+            });
+        }
+
+        // --- Bulk Edit Modal Handling ---
         const bulkModal = document.getElementById('bulkEditModal');
         const bulkCard = document.getElementById('bulkModalCard');
         const closeCross = document.getElementById('closeBulkModalCross');
@@ -875,6 +1025,7 @@ $can_delete = $is_admin;
             });
         }
 
+        // Checkbox Logic
         if (selectAll) {
             selectAll.addEventListener('change', function() {
                 rowCheckboxes.forEach(cb => {
