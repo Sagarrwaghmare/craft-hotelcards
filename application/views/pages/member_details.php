@@ -148,13 +148,11 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
 
         <div class="flex items-center gap-2">
             <?php if ($can_edit): ?>
-                <!-- Batch Delete Button -->
                 <button type="submit" id="deleteBatchCoBtn" onclick="return confirm('Are you sure you want to delete the selected co-members?');"
                     class="hidden bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/30 font-semibold text-xs px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5">
                     <i class="fa-solid fa-trash-can text-[11px]"></i> Delete Selected (<span id="selectedCoCount">0</span>)
                 </button>
 
-                <!-- Add Co-Member Button -->
                 <button type="button" id="openAddCoMemberBtn"
                     class="btn-add-comember bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs tracking-wider uppercase px-4 py-2 rounded-xl transition shadow-md shadow-indigo-600/20 flex items-center gap-1.5">
                     <i class="fa-solid fa-user-plus text-[11px]"></i> Add Co-Member
@@ -219,7 +217,6 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
                             <?php if ($can_edit): ?>
                                 <td class="py-3.5 px-6 text-right">
                                     <div class="inline-flex items-center gap-1.5">
-                                        <!-- Edit Co-Member -->
                                         <button type="button"
                                             class="btn-row-action btn-row-edit edit-co-member-btn text-slate-400 hover:text-blue-400 bg-slate-800/60 hover:bg-slate-800 p-2 rounded-lg border border-darkBorder transition"
                                             title="Edit Co-Member"
@@ -231,7 +228,6 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
                                             <i class="fa-regular fa-pen-to-square text-xs"></i>
                                         </button>
 
-                                        <!-- Delete Co-Member -->
                                         <a href="<?= base_url('main/delete_co_member/' . $c['id'] . '/' . $member['id']) ?>"
                                             onclick="return confirm('Are you sure you want to remove this co-member?');"
                                             class="btn-row-action btn-row-delete text-slate-400 hover:text-red-400 bg-slate-800/60 hover:bg-slate-800 p-2 rounded-lg border border-darkBorder transition"
@@ -289,17 +285,19 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
 </form>
 
 <!-- ========================================================================= -->
-<!-- SECTION 3: Visitor Details Table                                          -->
+<!-- SECTION 3: Visitor Details Table (Total Billing & Dynamic APC)            -->
 <!-- ========================================================================= -->
 <div class="bg-darkCard border border-darkBorder rounded-2xl shadow-xl overflow-hidden mb-6 table-card">
-    <div class="px-6 py-4 border-b border-darkBorder bg-[#0A1020] flex items-center justify-between card-topbar">
+    <div class="px-6 py-4 border-b border-darkBorder bg-[#0A1020] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 card-topbar">
         <div class="flex items-center gap-2.5">
             <i class="fa-solid fa-clock-rotate-left text-blue-400 text-sm"></i>
             <h3 class="text-sm font-bold text-white uppercase tracking-wider card-heading">Visitor Details</h3>
         </div>
-        <div class="flex items-center gap-4 text-xs">
-            <span class="text-slate-400 header-stat">Total PAX: <strong class="text-slate-200"><?= isset($summary['total_pax']) ? $summary['total_pax'] : 0 ?></strong></span>
+        <div class="flex flex-wrap items-center gap-4 text-xs">
             <span class="text-slate-400 header-stat">Total Visits: <strong class="text-white"><?= isset($total_visits) ? $total_visits : count($visits ?? []) ?></strong></span>
+            <span class="text-slate-400 header-stat">Total PAX: <strong class="text-slate-200"><?= isset($summary['total_pax']) ? $summary['total_pax'] : 0 ?></strong></span>
+            <span class="text-slate-400 header-stat">Total Spend: <strong class="text-emerald-400 font-mono">$<?= number_format((float)($summary['total_billing'] ?? 0), 2) ?></strong></span>
+            <span class="text-slate-400 header-stat">Avg APC: <strong class="text-sky-400 font-mono">$<?= number_format((float)($summary['avg_apc'] ?? 0), 2) ?></strong></span>
         </div>
     </div>
 
@@ -309,6 +307,7 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
                 <tr>
                     <th scope="col" class="py-3.5 px-6">Visit Date</th>
                     <th scope="col" class="py-3.5 px-6">No of Pax</th>
+                    <th scope="col" class="py-3.5 px-6">Total Billing</th>
                     <th scope="col" class="py-3.5 px-6">APC (Average Per Cover)</th>
                 </tr>
             </thead>
@@ -319,27 +318,48 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
                         $v = (object)$v;
                         $rawDate = !empty($v->visit_date) ? $v->visit_date : (!empty($v->date) ? $v->date : '');
                         $formattedDate = (!empty($rawDate) && $rawDate !== '0000-00-00') ? date('d-M-Y', strtotime($rawDate)) : 'N/A';
-                        $pax = isset($v->no_of_pax) ? $v->no_of_pax : (isset($v->pax) ? $v->pax : '0');
-                        $apc = isset($v->apc) ? number_format((float)$v->apc, 2) : '0.00';
+
+                        // Safe pax extraction
+                        $pax = (int)(isset($v->no_of_pax) ? $v->no_of_pax : (isset($v->pax) ? $v->pax : 1));
+                        $paxSafe = max(1, $pax);
+
+                        // Database stores Total Billing in 'apc' field
+                        $totalBilling = isset($v->apc) ? (float)$v->apc : 0.00;
+
+                        // Dynamic APC = Total Billing / Pax (with safe zero handling)
+                        $calculatedApc = ($paxSafe > 0) ? ($totalBilling / $paxSafe) : 0.00;
                         ?>
                         <tr class="details-table-row hover:bg-slate-800/40 transition">
+                            <!-- Visit Date -->
                             <td class="py-3.5 px-6 font-mono text-xs text-white field-val">
                                 <?= htmlspecialchars($formattedDate) ?>
                             </td>
+
+                            <!-- PAX -->
                             <td class="py-3.5 px-6 font-medium text-slate-200 field-val">
                                 <span class="inline-flex items-center gap-1.5">
                                     <i class="fa-solid fa-users text-slate-500 text-xs"></i>
                                     <?= htmlspecialchars($pax) ?>
                                 </span>
                             </td>
-                            <td class="py-3.5 px-6 font-mono text-emerald-400 font-semibold">
-                                $<?= htmlspecialchars($apc) ?>
+
+                            <!-- Total Billing -->
+                            <td class="py-3.5 px-6 font-mono text-sm text-white font-semibold field-val">
+                                $<?= number_format($totalBilling, 2) ?>
+                            </td>
+
+                            <!-- Dynamic APC (Billing / Pax) -->
+                            <td class="py-3.5 px-6 font-mono text-xs text-emerald-400 font-semibold">
+                                <span class="inline-flex items-center gap-1">
+                                    <i class="fa-solid fa-calculator text-[10px] text-emerald-500/70"></i>
+                                    $<?= number_format($calculatedApc, 2) ?>
+                                </span>
                             </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="3" class="py-8 text-center text-xs text-slate-500">
+                        <td colspan="4" class="py-8 text-center text-xs text-slate-500">
                             <i class="fa-solid fa-calendar-xmark text-xl mb-2 block"></i>
                             No visitor details recorded for this member yet.
                         </td>
@@ -465,7 +485,7 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
 <?php endif; ?>
 
 <!-- ========================================================================= -->
-<!-- MODAL: Add Visit Details (Admin & Editor only)                             -->
+<!-- MODAL: Add Visit Details (Total Billing Input)                            -->
 <!-- ========================================================================= -->
 <?php if ($can_edit): ?>
     <div id="visitModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 transition-all">
@@ -483,12 +503,14 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
             <form action="<?= base_url('main/add_visit') ?>" method="POST" class="p-6 space-y-4">
                 <input type="hidden" name="member_id" value="<?= $member['id'] ?>">
 
+                <!-- Visit Date -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">Visit Date</label>
                     <input type="date" name="visit_date" required value="<?= date('Y-m-d') ?>"
                         class="form-control w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition cursor-pointer">
                 </div>
 
+                <!-- No of Pax (1 - 25) -->
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider form-label">No of Pax</label>
@@ -498,8 +520,12 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
                         class="form-control w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition">
                 </div>
 
+                <!-- Total Billing (Saved as 'apc' in DB) -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">APC (Average Per Cover)</label>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider form-label">Total Billing ($)</label>
+                        <span class="text-[10px] text-slate-400">APC will calculate automatically</span>
+                    </div>
                     <input type="number" step="0.01" min="0" name="apc" required placeholder="0.00"
                         class="form-control w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition">
                 </div>

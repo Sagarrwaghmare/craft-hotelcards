@@ -1,4 +1,3 @@
-
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
@@ -58,16 +57,27 @@ class Visit_model extends CI_Model
         return $query->result_array();
     }
 
+    /**
+     * Member summary with Total Spend (Billing) and True Overall Average APC
+     */
     public function get_member_summary($member_id)
     {
         $this->db->select('
             COUNT(id) as total_visits,
             COALESCE(SUM(no_of_pax), 0) as total_pax,
-            COALESCE(AVG(apc), 0.00) as avg_apc
+            COALESCE(SUM(apc), 0.00) as total_billing
         ');
-        $this->db->where('member_id', $member_id);
+        $this->db->where('member_id', (int)$member_id);
         $query = $this->db->get($this->table);
-        return $query->row_array();
+        $summary = $query->row_array();
+
+        $total_pax = (int)($summary['total_pax'] ?? 0);
+        $total_billing = (float)($summary['total_billing'] ?? 0.00);
+
+        // Safe division for overall Average APC
+        $summary['avg_apc'] = ($total_pax > 0) ? ($total_billing / $total_pax) : 0.00;
+
+        return $summary;
     }
 
     public function add($data)

@@ -71,17 +71,19 @@ name, relationship(Wife, Husband, Son, Daughter, Father, Mother, Others), Contac
 
 
 in member list: 
-    add col called total co members  
+    add col called total co members  -d also added to dashboard page
 
 in member details: 
-    add family members display above visitor details, When displaying the details of a co-member write Name of Co-Member + relation + of + Member Name 
+    add family members display above visitor details, When displaying the details of a co-member write Name of Co-Member + relation + of + Member Name -d
 
-    In add visit details Change APC to Total Billing doubt
-    
-    In the Vistor Details panel display Total Billing & APC (Apc is total billing / visitors) doubt? should total billing be total bill and apc calculated on dashboard
+    In add visit details Change APC to Total Billing doubt,    In the Vistor Details panel display Total Billing & APC (Apc is total billing / visitors) doubt? should total billing be total bill and apc calculated on dashboard -d
 
 
-In export to CSV for members also export co-members data separtely. doubt? where in member details or in member list? and how to display co member with member in export? 
+In export to CSV for members also export co-members data separtely. doubt? where in member details or in member list? and how to display co member with member in export? -d 
 
 
 another doubt... should co memebr/ family dob anniversary be shown in dashboard page?
+
+change calendars for comember and visit 
+
+change currency symbol UI to INR 
