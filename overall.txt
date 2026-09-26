@@ -67,8 +67,7 @@ lets see:
 
 new tasks:
 add family members 'co-members' table, back and frontend, mulitple for one member 
-name, relationship(Wife, Husband, Son, Daughter, Father, Mother, Others), Contact no: , DOB:
-
+name, relationship(Wife, Husband, Son, Daughter, Father, Mother, Others), Contact no: (important) , DOB: 
 
 in member list: 
     add col called total co members  -d also added to dashboard page
@@ -82,8 +81,30 @@ in member details:
 In export to CSV for members also export co-members data separtely. doubt? where in member details or in member list? and how to display co member with member in export? -d 
 
 
-another doubt... should co memebr/ family dob anniversary be shown in dashboard page?
+in dashboard.. add co member date too i guess with members 
+name + realtion of + member in row...  only for DOB 
+member should be direct name only 
+
+TASKS: 
+
+
+SHOW co memebr/ family dob be shown in dashboard page. name + realtion of + member in row...
+
+
+change currency symbol UI to INR  -d
+
+
+font change something good
+
+
+
+
+
 
 change calendars for comember and visit 
 
-change currency symbol UI to INR 
+logo - pending
+
+memebr view message template for future...
+
+add co member in add member only - not happening 

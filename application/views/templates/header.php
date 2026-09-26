@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= isset($title) ? $title : 'Dashboard' ?></title>
+    <!-- Browser Tab Icon (Favicon) -->
+    <!-- <link rel="icon" type="image/png" href="<?= base_url('assets/images/favicon.png?v=1') ?>">
+    <link rel="apple-touch-icon" href="<?= base_url('assets/images/favicon.png?v=1') ?>"> -->
 
     <!-- Immediate Theme Application (Runs before HTML renders to eliminate flicker) -->
     <script>
