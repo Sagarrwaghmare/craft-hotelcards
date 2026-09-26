@@ -296,8 +296,8 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
         <div class="flex flex-wrap items-center gap-4 text-xs">
             <span class="text-slate-400 header-stat">Total Visits: <strong class="text-white"><?= isset($total_visits) ? $total_visits : count($visits ?? []) ?></strong></span>
             <span class="text-slate-400 header-stat">Total PAX: <strong class="text-slate-200"><?= isset($summary['total_pax']) ? $summary['total_pax'] : 0 ?></strong></span>
-            <span class="text-slate-400 header-stat">Total Spend: <strong class="text-emerald-400 font-mono">$<?= number_format((float)($summary['total_billing'] ?? 0), 2) ?></strong></span>
-            <span class="text-slate-400 header-stat">Avg APC: <strong class="text-sky-400 font-mono">$<?= number_format((float)($summary['avg_apc'] ?? 0), 2) ?></strong></span>
+            <span class="text-slate-400 header-stat">Total Spend: <strong class="text-emerald-400 font-mono">₹<?= number_format((float)($summary['total_billing'] ?? 0), 2) ?></strong></span>
+            <span class="text-slate-400 header-stat">Avg APC: <strong class="text-sky-400 font-mono">₹<?= number_format((float)($summary['avg_apc'] ?? 0), 2) ?></strong></span>
         </div>
     </div>
 
@@ -345,14 +345,14 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
 
                             <!-- Total Billing -->
                             <td class="py-3.5 px-6 font-mono text-sm text-white font-semibold field-val">
-                                $<?= number_format($totalBilling, 2) ?>
+                                ₹<?= number_format($totalBilling, 2) ?>
                             </td>
 
                             <!-- Dynamic APC (Billing / Pax) -->
                             <td class="py-3.5 px-6 font-mono text-xs text-emerald-400 font-semibold">
                                 <span class="inline-flex items-center gap-1">
                                     <i class="fa-solid fa-calculator text-[10px] text-emerald-500/70"></i>
-                                    $<?= number_format($calculatedApc, 2) ?>
+                                    ₹<?= number_format($calculatedApc, 2) ?>
                                 </span>
                             </td>
                         </tr>
