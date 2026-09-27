@@ -285,26 +285,14 @@ class Main extends CI_Controller
     public function members()
     {
         $this->load->model('Member_model');
-        $this->load->model('Comember_model');
 
         $data['title']          = 'Membership & Events Overview';
         $data['active_menu']    = 'members';
         $data['gold_count']     = $this->Member_model->count_by_type('Gold');
         $data['platinum_count'] = $this->Member_model->count_by_type('Platinum');
 
-        $events = $this->Member_model->get_upcoming_events(50);
-
-        // Attach co-members count for each event's member
-        $co_counts = $this->Comember_model->get_counts_map();
-        if (!empty($events)) {
-            foreach ($events as &$ev) {
-                $mid = $ev['member_id'] ?? $ev['id'] ?? 0;
-                $ev['co_members_count'] = $co_counts[$mid] ?? 0;
-            }
-            unset($ev);
-        }
-
-        $data['events'] = $events;
+        // Automatically includes both Members and Co-Members sorted by nearest date
+        $data['events']         = $this->Member_model->get_upcoming_events(50);
 
         $this->load->view('templates/header', $data);
         $this->load->view('templates/sidebar', $data);

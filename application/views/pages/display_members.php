@@ -13,7 +13,7 @@ $is_viewer = ($user_role === 'viewer');
         <div>
             <span class="text-[11px] font-bold text-blue-400 tracking-wider uppercase">Analytics & Outreach</span>
             <h2 class="text-2xl font-bold text-white tracking-tight page-title">Membership and Events Overview</h2>
-            <p class="text-xs text-slate-400 page-subtitle">Track upcoming member birthdays, anniversaries, and connect directly via WhatsApp.</p>
+            <p class="text-xs text-slate-400 page-subtitle">Track upcoming birthdays, anniversaries, and connect directly via WhatsApp.</p>
         </div>
     </div>
 
@@ -94,9 +94,8 @@ $is_viewer = ($user_role === 'viewer');
         <table class="w-full text-left text-sm text-slate-300" id="eventsTable">
             <thead class="events-table-head text-[11px] uppercase tracking-wider text-slate-400 bg-slate-900/60 border-b border-darkBorder font-semibold">
                 <tr>
-                    <th scope="col" class="py-3.5 px-6">Member</th>
+                    <th scope="col" class="py-3.5 px-6">Member / Co-Member</th>
                     <th scope="col" class="py-3.5 px-6">Subscription Type</th>
-                    <!-- <th scope="col" class="py-3.5 px-6 text-center">Co-Members</th> -->
                     <th scope="col" class="py-3.5 px-6">Event</th>
                     <th scope="col" class="py-3.5 px-6">Date</th>
                     <th scope="col" class="py-3.5 px-6 text-center">Action</th>
@@ -105,7 +104,7 @@ $is_viewer = ($user_role === 'viewer');
             <tbody class="divide-y divide-darkBorder">
                 <?php if (empty($events)): ?>
                     <tr id="empty-state-row">
-                        <td colspan="6" class="py-10 text-center text-slate-500">
+                        <td colspan="5" class="py-10 text-center text-slate-500">
                             <i class="fa-solid fa-calendar-xmark text-2xl mb-2 block"></i>
                             No upcoming birthdays or anniversaries found.
                         </td>
@@ -113,38 +112,65 @@ $is_viewer = ($user_role === 'viewer');
                 <?php else: ?>
                     <?php foreach ($events as $row):
                         $clean_phone = preg_replace('/[^0-9]/', '', $row['contact_no'] ?? '');
-                        $greetMessage = "Dear {$row['name']}, warm greetings from our hotel! 🎉 Wishing you a very Happy {$row['event']} in advance! To celebrate this special occasion with us, we are pleased to offer you an exclusive 20% discount on your next dine-in with your {$row['type']} Membership card. We look forward to welcoming you!";
+                        $isCoMember  = !empty($row['is_comember']);
+                        $displayName = !empty($row['display_name']) ? $row['display_name'] : $row['name'];
+
+                        // Tailored WhatsApp Greeting
+                        if ($isCoMember) {
+                            $greetMessage = "Dear {$row['name']}, warm greetings from our hotel! 🎉 Wishing you a very Happy Birthday in advance! To celebrate this special occasion with us, we are pleased to offer you an exclusive 20% discount on your next dine-in with your family's {$row['type']} Membership card. We look forward to welcoming you!";
+                        } else {
+                            $greetMessage = "Dear {$row['name']}, warm greetings from our hotel! 🎉 Wishing you a very Happy {$row['event']} in advance! To celebrate this special occasion with us, we are pleased to offer you an exclusive 20% discount on your next dine-in with your {$row['type']} Membership card. We look forward to welcoming you!";
+                        }
+
                         $wa_url = !empty($clean_phone)
                             ? "https://wa.me/{$clean_phone}?text=" . rawurlencode($greetMessage)
                             : "";
                         $daysText = ($row['days_left'] == 0) ? 'Today' : 'in ' . $row['days_left'] . ' days';
-                        $co_count = (int)($row['co_members_count'] ?? 0);
                     ?>
                         <tr class="event-row hover:bg-slate-800/40 transition"
                             data-type="<?= strtolower($row['type']) ?>"
-                            data-name="<?= htmlspecialchars($row['name'], ENT_QUOTES) ?>"
+                            data-name="<?= htmlspecialchars($displayName, ENT_QUOTES) ?>"
                             data-phone="<?= htmlspecialchars($row['contact_no'] ?? '-', ENT_QUOTES) ?>"
                             data-card="<?= htmlspecialchars($row['type'], ENT_QUOTES) ?>"
                             data-event="<?= htmlspecialchars($row['event'], ENT_QUOTES) ?>"
                             data-date="<?= htmlspecialchars($row['date'], ENT_QUOTES) ?>"
                             data-days="<?= htmlspecialchars($daysText, ENT_QUOTES) ?>">
 
-                            <!-- Member Name & Clean Avatar -->
+                            <!-- Member / Co-Member Cell -->
                             <td class="py-4 px-6 font-semibold text-white">
                                 <div class="flex items-center gap-3">
-                                    <span class="member-avatar w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 shrink-0">
-                                        <?= strtoupper(substr($row['name'], 0, 1)) ?>
-                                    </span>
-                                    <div>
-                                        <span class="row-name font-semibold text-white"><?= htmlspecialchars($row['name']) ?></span>
-                                        <?php if (!empty($row['contact_no'])): ?>
-                                            <div class="row-phone text-[11px] font-normal text-slate-400 font-mono"><?= htmlspecialchars($row['contact_no']) ?></div>
-                                        <?php endif; ?>
-                                    </div>
+                                    <?php if ($isCoMember): ?>
+                                        <!-- Co-Member Avatar with Family Tag -->
+                                        <span class="member-avatar w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xs font-bold text-indigo-300 shrink-0">
+                                            <?= strtoupper(substr($row['name'], 0, 1)) ?>
+                                        </span>
+                                        <div>
+                                            <div class="row-name font-semibold text-white">
+                                                <?= htmlspecialchars($row['name']) ?>
+                                                <span class="text-xs font-normal text-slate-400 ml-1">
+                                                    (<?= htmlspecialchars($row['relationship']) ?> of <?= htmlspecialchars($row['parent_name']) ?>)
+                                                </span>
+                                            </div>
+                                            <?php if (!empty($row['contact_no'])): ?>
+                                                <div class="row-phone text-[11px] font-normal text-slate-400 font-mono"><?= htmlspecialchars($row['contact_no']) ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <!-- Primary Member Avatar -->
+                                        <span class="member-avatar w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 shrink-0">
+                                            <?= strtoupper(substr($row['name'], 0, 1)) ?>
+                                        </span>
+                                        <div>
+                                            <span class="row-name font-semibold text-white"><?= htmlspecialchars($row['name']) ?></span>
+                                            <?php if (!empty($row['contact_no'])): ?>
+                                                <div class="row-phone text-[11px] font-normal text-slate-400 font-mono"><?= htmlspecialchars($row['contact_no']) ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             </td>
 
-                            <!-- Card Type Badge (Gold / Platinum only) -->
+                            <!-- Card Type Badge (Inherited Gold / Platinum) -->
                             <td class="py-4 px-6">
                                 <?php if (strtolower($row['type']) === 'gold'): ?>
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/30">
@@ -156,14 +182,6 @@ $is_viewer = ($user_role === 'viewer');
                                     </span>
                                 <?php endif; ?>
                             </td>
-
-                            <!-- Co-Members Count Badge -->
-                            <!-- <td class="py-4 px-6 text-center">
-                                <span class="co-count-badge inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold <?= $co_count > 0 ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30' : 'bg-slate-800/60 text-slate-500 border border-slate-700/50' ?>">
-                                    <i class="fa-solid fa-people-roof text-[10px]"></i>
-                                    <?= $co_count ?>
-                                </span>
-                            </td> -->
 
                             <!-- Event Badge -->
                             <td class="py-4 px-6">
@@ -239,13 +257,6 @@ $is_viewer = ($user_role === 'viewer');
     html.light .btn-add-member:hover {
         background-color: #1d4ed8 !important;
         border-color: #1d4ed8 !important;
-    }
-
-    /* Co-Members Badge in Light Mode */
-    html.light .co-count-badge {
-        background-color: #f1f5f9 !important;
-        border-color: #cbd5e1 !important;
-        color: #334155 !important;
     }
 </style>
 
@@ -366,7 +377,7 @@ $is_viewer = ($user_role === 'viewer');
 
     function exportToCSV() {
         const rows = document.querySelectorAll('#eventsTable tbody tr.event-row');
-        let csvContent = "\uFEFFMember Name,Contact No,Card Type,Event,Date,Schedule\n";
+        let csvContent = "\uFEFFMember / Co-Member,Contact No,Card Type,Event,Date,Schedule\n";
         let count = 0;
 
         rows.forEach(row => {

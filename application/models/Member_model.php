@@ -34,19 +34,26 @@ class Member_model extends CI_Model
         return $this->db->where('card_type', $type)->count_all_results($this->table);
     }
 
-    public function get_upcoming_events($limit = 20)
+    /**
+     * Fetch upcoming birthdays (Members & Co-Members) and anniversaries (Members only)
+     */
+    public function get_upcoming_events($limit = 50)
     {
-        $this->db->where('dob IS NOT NULL', null, false);
-        $this->db->or_where('anniversary IS NOT NULL', null, false);
-        $members = $this->db->get($this->table)->result_array();
-
         $events = [];
         $today = new DateTime('today');
         $currentYear = (int)$today->format('Y');
 
+        // ----------------------------------------------------
+        // 1. Process Primary Members (Birthday & Anniversary)
+        // ----------------------------------------------------
+        $this->db->where('dob IS NOT NULL', null, false);
+        $this->db->or_where('anniversary IS NOT NULL', null, false);
+        $members = $this->db->get($this->table)->result_array();
+
         foreach ($members as $m) {
             $fullName = trim($m['first_name'] . ' ' . $m['last_name']);
 
+            // Member Birthday
             if (!empty($m['dob']) && $m['dob'] !== '0000-00-00') {
                 $dob = new DateTime($m['dob']);
                 $eventDate = new DateTime("{$currentYear}-{$dob->format('m-d')}");
@@ -57,17 +64,22 @@ class Member_model extends CI_Model
                 $diff = $today->diff($eventDate)->days;
 
                 $events[] = [
-                    'member_id'   => $m['id'],
-                    'name'        => $fullName,
-                    'type'        => $m['card_type'],
-                    'event'       => 'Birthday',
-                    'sort_date'   => $eventDate->format('Y-m-d'),
-                    'date'        => $eventDate->format('d-M-Y'),
-                    'days_left'   => $diff,
-                    'contact_no'  => $m['contact_no'] ?? ''
+                    'member_id'    => $m['id'],
+                    'is_comember'  => false,
+                    'name'         => $fullName,
+                    'display_name' => $fullName,
+                    'relationship' => '',
+                    'parent_name'  => '',
+                    'type'         => $m['card_type'],
+                    'event'        => 'Birthday',
+                    'sort_date'    => $eventDate->format('Y-m-d'),
+                    'date'         => $eventDate->format('d-M-Y'),
+                    'days_left'    => $diff,
+                    'contact_no'   => $m['contact_no'] ?? ''
                 ];
             }
 
+            // Member Anniversary
             if (!empty($m['anniversary']) && $m['anniversary'] !== '0000-00-00') {
                 $anni = new DateTime($m['anniversary']);
                 $eventDate = new DateTime("{$currentYear}-{$anni->format('m-d')}");
@@ -78,18 +90,70 @@ class Member_model extends CI_Model
                 $diff = $today->diff($eventDate)->days;
 
                 $events[] = [
-                    'member_id'   => $m['id'],
-                    'name'        => $fullName,
-                    'type'        => $m['card_type'],
-                    'event'       => 'Anniversary',
-                    'sort_date'   => $eventDate->format('Y-m-d'),
-                    'date'        => $eventDate->format('d-M-Y'),
-                    'days_left'   => $diff,
-                    'contact_no'  => $m['contact_no'] ?? ''
+                    'member_id'    => $m['id'],
+                    'is_comember'  => false,
+                    'name'         => $fullName,
+                    'display_name' => $fullName,
+                    'relationship' => '',
+                    'parent_name'  => '',
+                    'type'         => $m['card_type'],
+                    'event'        => 'Anniversary',
+                    'sort_date'    => $eventDate->format('Y-m-d'),
+                    'date'         => $eventDate->format('d-M-Y'),
+                    'days_left'    => $diff,
+                    'contact_no'   => $m['contact_no'] ?? ''
                 ];
             }
         }
 
+        // ----------------------------------------------------
+        // 2. Process Co-Members / Family Members (Birthday only)
+        // ----------------------------------------------------
+        $this->db->select('
+            comembers.*,
+            members.first_name as parent_first_name,
+            members.last_name as parent_last_name,
+            members.card_type as parent_card_type,
+            members.contact_no as parent_contact_no
+        ');
+        $this->db->from('comembers');
+        $this->db->join('members', 'members.id = comembers.member_id', 'inner');
+        $this->db->where('comembers.dob IS NOT NULL', null, false);
+        $comembers = $this->db->get()->result_array();
+
+        foreach ($comembers as $cm) {
+            if (!empty($cm['dob']) && $cm['dob'] !== '0000-00-00') {
+                $dob = new DateTime($cm['dob']);
+                $eventDate = new DateTime("{$currentYear}-{$dob->format('m-d')}");
+                if ($eventDate < $today) {
+                    $eventDate->modify('+1 year');
+                }
+
+                $diff = $today->diff($eventDate)->days;
+                $parentName = trim(($cm['parent_first_name'] ?? '') . ' ' . ($cm['parent_last_name'] ?? ''));
+                $coName = trim($cm['name']);
+                $phone = !empty($cm['contact_no']) ? $cm['contact_no'] : ($cm['parent_contact_no'] ?? '');
+
+                $events[] = [
+                    'member_id'    => $cm['member_id'],
+                    'is_comember'  => true,
+                    'name'         => $coName,
+                    'display_name' => $coName . ' (' . $cm['relationship'] . ' of ' . $parentName . ')',
+                    'relationship' => $cm['relationship'],
+                    'parent_name'  => $parentName,
+                    'type'         => $cm['parent_card_type'] ?? 'Gold',
+                    'event'        => 'Birthday',
+                    'sort_date'    => $eventDate->format('Y-m-d'),
+                    'date'         => $eventDate->format('d-M-Y'),
+                    'days_left'    => $diff,
+                    'contact_no'   => $phone
+                ];
+            }
+        }
+
+        // ----------------------------------------------------
+        // 3. Sort all events by closest upcoming date
+        // ----------------------------------------------------
         usort($events, function ($a, $b) {
             return strcmp($a['sort_date'], $b['sort_date']);
         });
