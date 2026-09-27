@@ -30,11 +30,19 @@
     <link rel="stylesheet" href="<?= base_url('assets/cdn/fontawesome/css/all.min.css') ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
                     colors: {
                         darkBg: '#090E1A',
                         darkSidebar: '#0B132B',
@@ -46,6 +54,23 @@
             }
         }
     </script>
+
+    <style>
+        /* Apply globally to the entire application */
+        body,
+        html,
+        input,
+        button,
+        select,
+        textarea {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+
+        /* Keep font-mono for Card numbers and dates so they stay monospace */
+        .font-mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+        }
+    </style>
 
     <!-- Global Font Scaling & Light Mode Theme Overrides -->
     <style>
