@@ -88,7 +88,7 @@ member should be direct name only
 TASKS: 
 
 
-SHOW co memebr/ family dob be shown in dashboard page. name + realtion of + member in row...
+SHOW co memebr/ family dob be shown in dashboard page. name + realtion of + member in row... -d
 
 
 change currency symbol UI to INR  -d
