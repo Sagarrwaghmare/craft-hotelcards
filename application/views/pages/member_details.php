@@ -5,6 +5,10 @@ $can_edit  = in_array($user_role, ['admin', 'editor']);
 $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_name'] ?? ''));
 ?>
 
+<!-- Flatpickr Calendar Assets -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <!-- Header Title & Action Navigation -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
     <div class="flex items-center gap-3">
@@ -462,10 +466,16 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
                         class="form-control w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition">
                 </div>
 
+                <!-- Co-Member DOB (Flatpickr DD-MM-YYYY) -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">Date of Birth</label>
-                    <input type="date" name="dob" id="co_dob"
-                        class="form-control w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition cursor-pointer">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 z-10">
+                            <i class="fa-regular fa-calendar text-xs"></i>
+                        </div>
+                        <input type="text" name="dob" id="co_dob" placeholder="DD-MM-YYYY"
+                            class="form-control w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition cursor-pointer">
+                    </div>
                 </div>
 
                 <div class="pt-4 border-t border-darkBorder flex items-center justify-end gap-3 modal-footer">
@@ -485,7 +495,7 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
 <?php endif; ?>
 
 <!-- ========================================================================= -->
-<!-- MODAL: Add Visit Details (Total Billing Input)                            -->
+<!-- MODAL: Add Visit Details (Total Billing & Flatpickr Visit Date)           -->
 <!-- ========================================================================= -->
 <?php if ($can_edit): ?>
     <div id="visitModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 transition-all">
@@ -503,11 +513,16 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
             <form action="<?= base_url('main/add_visit') ?>" method="POST" class="p-6 space-y-4">
                 <input type="hidden" name="member_id" value="<?= $member['id'] ?>">
 
-                <!-- Visit Date -->
+                <!-- Visit Date (Flatpickr DD-MM-YYYY) -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">Visit Date</label>
-                    <input type="date" name="visit_date" required value="<?= date('Y-m-d') ?>"
-                        class="form-control w-full bg-[#0A1020] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition cursor-pointer">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 z-10">
+                            <i class="fa-regular fa-calendar-check text-xs"></i>
+                        </div>
+                        <input type="text" name="visit_date" id="visitDateInput" required placeholder="DD-MM-YYYY" value="<?= date('Y-m-d') ?>"
+                            class="form-control w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition cursor-pointer">
+                    </div>
                 </div>
 
                 <!-- No of Pax (1 - 25) -->
@@ -523,7 +538,7 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
                 <!-- Total Billing (Saved as 'apc' in DB) -->
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider form-label">Total Billing ($)</label>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider form-label">Total Billing (₹)</label>
                         <span class="text-[10px] text-slate-400">APC will calculate automatically</span>
                     </div>
                     <input type="number" step="0.01" min="0" name="apc" required placeholder="0.00"
@@ -547,7 +562,7 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
 <?php endif; ?>
 
 <!-- ========================================================================= -->
-<!-- SCOPED LIGHT MODE STYLING OVERRIDES                                       -->
+<!-- SCOPED LIGHT MODE & FLATPICKR STYLING OVERRIDES                           -->
 <!-- ========================================================================= -->
 <style>
     /* Table Headers */
@@ -672,13 +687,15 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
         color: #334155 !important;
     }
 
-    html.light .form-control {
+    html.light .form-control,
+    html.light .flatpickr-input {
         background-color: #ffffff !important;
         border-color: #cbd5e1 !important;
         color: #0f172a !important;
     }
 
-    html.light .form-control:focus {
+    html.light .form-control:focus,
+    html.light .flatpickr-input:focus {
         border-color: #4f46e5 !important;
     }
 
@@ -741,15 +758,238 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
     html.light .header-stat strong {
         color: #0f172a !important;
     }
+
+    /* ========================================================
+       FLATPICKR CALENDAR COMPLETE THEME (DARK & LIGHT)
+       ======================================================== */
+    .flatpickr-calendar {
+        background: #111C38 !important;
+        border: 1px solid #1E2945 !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4) !important;
+        border-radius: 1rem !important;
+        font-family: inherit !important;
+        overflow: hidden !important;
+        z-index: 99999 !important;
+        /* Always above modal backdrop */
+    }
+
+    .flatpickr-calendar.arrowTop:before,
+    .flatpickr-calendar.arrowTop:after {
+        border-bottom-color: #0A1020 !important;
+    }
+
+    .flatpickr-calendar.arrowBottom:before,
+    .flatpickr-calendar.arrowBottom:after {
+        border-top-color: #111C38 !important;
+    }
+
+    .flatpickr-months {
+        background: #0A1020 !important;
+        padding-top: 8px !important;
+        padding-bottom: 4px !important;
+    }
+
+    .flatpickr-current-month {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+        background: transparent !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        padding: 2px 6px !important;
+        border-radius: 0.5rem !important;
+        cursor: pointer !important;
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months option {
+        background-color: #111C38 !important;
+        color: #f8fafc !important;
+        padding: 8px 12px !important;
+    }
+
+    .flatpickr-current-month input.cur-year {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    .flatpickr-current-month .numInputWrapper span {
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .flatpickr-current-month .numInputWrapper span.arrowUp:after {
+        border-bottom-color: #ffffff !important;
+    }
+
+    .flatpickr-current-month .numInputWrapper span.arrowDown:after {
+        border-top-color: #ffffff !important;
+    }
+
+    .flatpickr-months .flatpickr-prev-month,
+    .flatpickr-months .flatpickr-next-month {
+        color: #94a3b8 !important;
+        fill: #94a3b8 !important;
+        padding: 8px !important;
+    }
+
+    .flatpickr-months .flatpickr-prev-month:hover svg,
+    .flatpickr-months .flatpickr-next-month:hover svg {
+        fill: #38bdf8 !important;
+    }
+
+    span.flatpickr-weekday {
+        background: #0A1020 !important;
+        color: #64748b !important;
+        font-weight: 600 !important;
+        font-size: 11px !important;
+        text-transform: uppercase !important;
+    }
+
+    .flatpickr-innerContainer,
+    .flatpickr-rContainer,
+    .flatpickr-days {
+        background: #111C38 !important;
+    }
+
+    .flatpickr-day {
+        color: #cbd5e1 !important;
+        border-radius: 0.5rem !important;
+        border-color: transparent !important;
+        font-size: 12px !important;
+    }
+
+    .flatpickr-day:hover {
+        background: #1e293b !important;
+        color: #ffffff !important;
+    }
+
+    .flatpickr-day.prevMonthDay,
+    .flatpickr-day.nextMonthDay {
+        color: #475569 !important;
+    }
+
+    .flatpickr-day.selected {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border-radius: 0.5rem !important;
+        border-color: #2563eb !important;
+    }
+
+    .flatpickr-day.today {
+        border-color: #38bdf8 !important;
+    }
+
+    /* Light Mode Flatpickr */
+    html.light .flatpickr-calendar {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    html.light .flatpickr-calendar.arrowTop:before,
+    html.light .flatpickr-calendar.arrowTop:after {
+        border-bottom-color: #f8fafc !important;
+    }
+
+    html.light .flatpickr-calendar.arrowBottom:before,
+    html.light .flatpickr-calendar.arrowBottom:after {
+        border-top-color: #ffffff !important;
+    }
+
+    html.light .flatpickr-months,
+    html.light span.flatpickr-weekday {
+        background: #f8fafc !important;
+    }
+
+    html.light .flatpickr-current-month .flatpickr-monthDropdown-months {
+        color: #0f172a !important;
+    }
+
+    html.light .flatpickr-current-month .flatpickr-monthDropdown-months option {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+    html.light .flatpickr-current-month input.cur-year {
+        color: #0f172a !important;
+    }
+
+    html.light .flatpickr-current-month .numInputWrapper span.arrowUp:after {
+        border-bottom-color: #0f172a !important;
+    }
+
+    html.light .flatpickr-current-month .numInputWrapper span.arrowDown:after {
+        border-top-color: #0f172a !important;
+    }
+
+    html.light .flatpickr-months .flatpickr-prev-month svg,
+    html.light .flatpickr-months .flatpickr-next-month svg {
+        fill: #64748b !important;
+    }
+
+    html.light .flatpickr-months .flatpickr-prev-month:hover svg,
+    html.light .flatpickr-months .flatpickr-next-month:hover svg {
+        fill: #2563eb !important;
+    }
+
+    html.light span.flatpickr-weekday {
+        color: #64748b !important;
+    }
+
+    html.light .flatpickr-innerContainer,
+    html.light .flatpickr-rContainer,
+    html.light .flatpickr-days {
+        background: #ffffff !important;
+    }
+
+    html.light .flatpickr-day {
+        color: #1e293b !important;
+    }
+
+    html.light .flatpickr-day:hover {
+        background: #f1f5f9 !important;
+    }
+
+    html.light .flatpickr-day.prevMonthDay,
+    html.light .flatpickr-day.nextMonthDay {
+        color: #94a3b8 !important;
+    }
+
+    html.light .flatpickr-day.selected {
+        background: #2563eb !important;
+        color: #ffffff !important;
+    }
 </style>
 
 <!-- ========================================================================= -->
-<!-- JAVASCRIPT: Co-Member Multi-select, Add/Edit Modal & Visit Modal          -->
+<!-- JAVASCRIPT: Modals & Flatpickr DD-MM-YYYY Pickers                         -->
 <!-- ========================================================================= -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         <?php if ($can_edit): ?>
-            // --- Co-Member Modal Control ---
+            // ----------------------------------------------------
+            // 1. Flatpickr Initializations (DD-MM-YYYY)
+            // ----------------------------------------------------
+            const coDobPicker = flatpickr("#co_dob", {
+                dateFormat: "Y-m-d", // Form submits YYYY-MM-DD to MySQL
+                altInput: true,
+                altFormat: "d-m-Y", // Displays DD-MM-YYYY to user
+                altInputClass: "form-control w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition cursor-pointer"
+            });
+
+            const visitDatePicker = flatpickr("#visitDateInput", {
+                dateFormat: "Y-m-d", // Form submits YYYY-MM-DD to MySQL
+                altInput: true,
+                altFormat: "d-m-Y", // Displays DD-MM-YYYY to user
+                defaultDate: "<?= date('Y-m-d') ?>",
+                altInputClass: "form-control w-full bg-[#0A1020] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition cursor-pointer"
+            });
+
+            // ----------------------------------------------------
+            // 2. Co-Member Modal Control
+            // ----------------------------------------------------
             const coModal = document.getElementById('coMemberModal');
             const coModalCard = document.getElementById('coModalCard');
             const openAddCoBtn = document.getElementById('openAddCoMemberBtn');
@@ -761,7 +1001,6 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
             const inputCoName = document.getElementById('co_name');
             const selectCoRel = document.getElementById('co_relationship');
             const inputCoContact = document.getElementById('co_contact');
-            const inputCoDob = document.getElementById('co_dob');
 
             function openCoModal(isEdit = false, data = {}) {
                 if (isEdit) {
@@ -770,14 +1009,24 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
                     inputCoName.value = data.name || '';
                     selectCoRel.value = data.relationship || 'Others';
                     inputCoContact.value = data.contact || '';
-                    inputCoDob.value = data.dob || '';
+
+                    if (coDobPicker) {
+                        if (data.dob && data.dob !== '0000-00-00') {
+                            coDobPicker.setDate(data.dob, true);
+                        } else {
+                            coDobPicker.clear();
+                        }
+                    }
                 } else {
                     coModalTitle.innerHTML = '<i class="fa-solid fa-user-plus text-indigo-400"></i> <span>Add Co-Member</span>';
                     inputCoId.value = '';
                     inputCoName.value = '';
                     selectCoRel.value = 'Others';
                     inputCoContact.value = '';
-                    inputCoDob.value = '';
+
+                    if (coDobPicker) {
+                        coDobPicker.clear();
+                    }
                 }
 
                 coModal.classList.remove('hidden');
@@ -817,7 +1066,7 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
                 });
             });
 
-            // --- Checkbox & Batch Delete Toggle ---
+            // Checkbox & Batch Delete Toggle
             const selectAllCo = document.getElementById('selectAllCoMembers');
             const coCheckboxes = document.querySelectorAll('.co-checkbox');
             const deleteBatchCoBtn = document.getElementById('deleteBatchCoBtn');
@@ -848,7 +1097,9 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
                 cb.addEventListener('change', updateCoBatchState);
             });
 
-            // --- Visit Modal Control ---
+            // ----------------------------------------------------
+            // 3. Visit Modal Control
+            // ----------------------------------------------------
             const visitModal = document.getElementById('visitModal');
             const visitModalCard = document.getElementById('modalCard');
             const openVisitBtn = document.getElementById('openVisitModalBtn');
@@ -856,6 +1107,9 @@ $member_full_name = trim(($member['first_name'] ?? '') . ' ' . ($member['last_na
             const closeVisitBtn = document.getElementById('closeModalBtn');
 
             function openVisitModal() {
+                if (visitDatePicker) {
+                    visitDatePicker.setDate("<?= date('Y-m-d') ?>", true);
+                }
                 visitModal.classList.remove('hidden');
                 setTimeout(() => {
                     visitModalCard.classList.remove('scale-95');

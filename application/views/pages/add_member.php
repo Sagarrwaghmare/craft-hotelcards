@@ -16,6 +16,10 @@ $is_viewer     = ($current_role === 'viewer');
 $disabled_attr = $is_viewer ? 'disabled' : '';
 ?>
 
+<!-- Flatpickr Calendar Assets -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <!-- Header Title -->
 <div class="flex items-center justify-between mb-8">
     <div class="flex items-center gap-3">
@@ -85,24 +89,20 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
                     Card Number <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
                 <div class="flex items-center gap-2.5">
-                    <!-- Hidden fields submitted with form -->
                     <input type="hidden" name="card_prefix" id="hiddenCardPrefix" value="666">
                     <input type="hidden" name="card_year" id="hiddenCardYear" value="<?= date('Y') ?>">
 
-                    <!-- Dynamic Card Type Prefix Badge (666 for Gold, 999 for Platinum) -->
                     <span id="cardPrefixBadge"
                         class="card-prefix-badge badge-gold px-3.5 py-2.5 font-mono text-xs rounded-xl font-bold select-none transition-all shadow-sm">
                         666
                     </span>
 
-                    <!-- Unchangeable Current Year Badge -->
                     <span id="cardYearBadge"
                         class="card-year-badge px-3.5 py-2.5 font-mono text-xs rounded-xl font-bold select-none shadow-sm"
                         title="Current Registration Year">
                         <?= date('Y') ?>
                     </span>
 
-                    <!-- Dynamic User-defined Remaining Suffix -->
                     <input type="text" name="card_suffix" id="cardSuffixInput" required placeholder="e.g. 0042" maxlength="10"
                         value="<?= htmlspecialchars($existing_suffix) ?>" <?= $disabled_attr ?>
                         class="flex-1 bg-[#111C38] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
@@ -193,16 +193,22 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
                 class="w-full bg-[#0A1020] border border-darkBorder rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>"><?= $is_edit && !empty($m->address) ? htmlspecialchars($m->address) : '' ?></textarea>
         </div>
 
-        <!-- SECTION 4: DOB, Marital Status & Anniversary -->
+        <!-- SECTION 4: DOB, Marital Status & Anniversary (Flatpickr DD-MM-YYYY) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 p-5 bg-[#0A1020] border border-darkBorder rounded-xl section-box">
+
             <!-- Date of Birth (DOB) -->
             <div>
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 form-label">
                     Date of Birth (DOB) <?php if (!$is_viewer): ?><span class="text-red-400">*</span><?php endif; ?>
                 </label>
-                <input type="date" name="dob" required <?= $disabled_attr ?>
-                    value="<?= $is_edit && !empty($m->dob) ? htmlspecialchars($m->dob) : '' ?>"
-                    class="w-full bg-[#111C38] border border-darkBorder rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition cursor-pointer <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 z-10">
+                        <i class="fa-regular fa-calendar text-xs"></i>
+                    </div>
+                    <input type="text" name="dob" id="dobInput" required placeholder="DD-MM-YYYY" <?= $disabled_attr ?>
+                        value="<?= $is_edit && !empty($m->dob) ? htmlspecialchars($m->dob) : '' ?>"
+                        class="w-full bg-[#111C38] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition cursor-pointer <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
+                </div>
             </div>
 
             <!-- Marital Status -->
@@ -212,7 +218,7 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
                 </label>
                 <div class="relative">
                     <select name="marital_status" id="maritalStatusSelect" <?= $disabled_attr ?>
-                        class="w-full bg-[#111C38] border border-darkBorder rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition appearance-none cursor-pointer <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
+                        class="w-full bg-[#111C38] border border-darkBorder rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition appearance-none cursor-pointer <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
                         <option value="Single" <?= (!$is_edit || $m->marital_status === 'Single') ? 'selected' : '' ?>>Single</option>
                         <option value="Married" <?= ($is_edit && $m->marital_status === 'Married') ? 'selected' : '' ?>>Married</option>
                         <option value="Divorced" <?= ($is_edit && $m->marital_status === 'Divorced') ? 'selected' : '' ?>>Divorced</option>
@@ -232,9 +238,12 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
                     <span id="anniversaryBadge" class="text-[10px] text-slate-500 lowercase font-normal">(locked)</span>
                 </label>
                 <div class="relative">
-                    <input type="date" name="anniversary" id="anniversaryInput" <?= $disabled_attr ?>
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 z-10">
+                        <i class="fa-regular fa-calendar-check text-xs"></i>
+                    </div>
+                    <input type="text" name="anniversary" id="anniversaryInput" placeholder="DD-MM-YYYY" <?= $disabled_attr ?>
                         value="<?= $is_edit && !empty($m->anniversary) ? htmlspecialchars($m->anniversary) : '' ?>"
-                        class="w-full bg-[#111C38] border border-darkBorder rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
+                        class="w-full bg-[#111C38] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition cursor-pointer <?= $is_viewer ? 'opacity-60 cursor-not-allowed' : '' ?>">
                 </div>
             </div>
         </div>
@@ -250,27 +259,23 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
         <div class="pt-5 border-t border-darkBorder/60 flex items-center justify-between action-footer">
             <div class="flex items-center gap-3">
                 <?php if (!$is_viewer): ?>
-                    <!-- High-contrast Save/Update Member Button -->
                     <button type="submit"
                         class="save-member-btn bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase px-8 py-3 rounded-xl transition shadow-lg shadow-blue-600/25 active:scale-[0.99] flex items-center gap-2">
                         <i class="fa-solid fa-check text-xs"></i>
                         <span><?= $is_edit ? 'Update Member' : 'Save Member' ?></span>
                     </button>
                 <?php else: ?>
-                    <!-- Read-Only Badge for Viewers -->
                     <span class="inline-flex items-center px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 border border-darkBorder cursor-not-allowed select-none">
                         <i class="fa-solid fa-lock mr-2 text-xs text-slate-500"></i> Read Only Mode
                     </span>
                 <?php endif; ?>
 
-                <!-- Cancel Button -->
                 <a href="<?= base_url('main/members_list') ?>"
                     class="cancel-btn bg-transparent hover:bg-slate-800 text-slate-300 font-semibold text-xs tracking-wider uppercase px-6 py-3 rounded-xl border border-darkBorder transition shadow-sm">
                     <?= $is_viewer ? 'Back to Members' : 'Cancel' ?>
                 </a>
             </div>
 
-            <!-- Information Hint -->
             <?php if (!$is_viewer): ?>
                 <span class="text-[11px] text-slate-500 italic hidden sm:inline-block hint-text">
                     * Fields marked with red are mandatory.
@@ -285,7 +290,9 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
     </form>
 </div>
 
-<!-- Scoped Light Mode Adjustments for Add/Edit Member Screen -->
+<!-- ======================================================== -->
+<!-- Scoped Styling (Theme-aware Flatpickr & Light Mode)       -->
+<!-- ======================================================== -->
 <style>
     /* Default (Dark Mode) Badge Colors */
     .card-prefix-badge.badge-gold {
@@ -311,7 +318,9 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
         color: #0f172a !important;
     }
 
-    html.light .page-subtitle {
+    html.light .page-subtitle,
+    html.light .hint-text,
+    html.light .preview-label {
         color: #64748b !important;
     }
 
@@ -319,42 +328,28 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
         color: #334155 !important;
     }
 
-    html.light .hint-text {
-        color: #64748b !important;
-    }
-
-    html.light .preview-label {
-        color: #64748b !important;
-    }
-
     html.light #cardPreview {
         color: #0f172a !important;
     }
 
-    /* 666 / 999 Badges in Light Mode */
     html.light .card-prefix-badge.badge-gold {
         background-color: #fef3c7 !important;
         border: 1px solid #fcd34d !important;
         color: #b45309 !important;
-        /* Deep, legible amber */
     }
 
     html.light .card-prefix-badge.badge-platinum {
         background-color: #f1f5f9 !important;
         border: 1px solid #cbd5e1 !important;
         color: #334155 !important;
-        /* Dark legible slate */
     }
 
-    /* Year Badge in Light Mode */
     html.light .card-year-badge {
         background-color: #eff6ff !important;
         border: 1px solid #bfdbfe !important;
         color: #1d4ed8 !important;
-        /* Crisp blue text */
     }
 
-    /* Action Buttons in Light Mode */
     html.light .save-member-btn {
         background-color: #2563eb !important;
         color: #ffffff !important;
@@ -380,18 +375,245 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
         color: #0f172a !important;
     }
 
-    /* Section Sub-Boxes in Light Mode */
     html.light .section-box {
         background-color: #f8fafc !important;
         border-color: #e2e8f0 !important;
     }
+
+    html.light input.form-control,
+    html.light .flatpickr-input {
+        background-color: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    /* ========================================================
+       FLATPICKR CALENDAR COMPLETE THEME (DARK & LIGHT)
+       ======================================================== */
+    .flatpickr-calendar {
+        background: #111C38 !important;
+        border: 1px solid #1E2945 !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4) !important;
+        border-radius: 1rem !important;
+        font-family: inherit !important;
+        overflow: hidden !important;
+    }
+
+    .flatpickr-calendar.arrowTop:before,
+    .flatpickr-calendar.arrowTop:after {
+        border-bottom-color: #0A1020 !important;
+    }
+
+    .flatpickr-calendar.arrowBottom:before,
+    .flatpickr-calendar.arrowBottom:after {
+        border-top-color: #111C38 !important;
+    }
+
+    .flatpickr-months {
+        background: #0A1020 !important;
+        padding-top: 8px !important;
+        padding-bottom: 4px !important;
+    }
+
+    .flatpickr-current-month {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+        background: transparent !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        padding: 2px 6px !important;
+        border-radius: 0.5rem !important;
+        cursor: pointer !important;
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months option {
+        background-color: #111C38 !important;
+        color: #f8fafc !important;
+        padding: 8px 12px !important;
+    }
+
+    .flatpickr-current-month input.cur-year {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    .flatpickr-current-month .numInputWrapper span {
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .flatpickr-current-month .numInputWrapper span.arrowUp:after {
+        border-bottom-color: #ffffff !important;
+    }
+
+    .flatpickr-current-month .numInputWrapper span.arrowDown:after {
+        border-top-color: #ffffff !important;
+    }
+
+    .flatpickr-months .flatpickr-prev-month,
+    .flatpickr-months .flatpickr-next-month {
+        color: #94a3b8 !important;
+        fill: #94a3b8 !important;
+        padding: 8px !important;
+    }
+
+    .flatpickr-months .flatpickr-prev-month:hover svg,
+    .flatpickr-months .flatpickr-next-month:hover svg {
+        fill: #38bdf8 !important;
+    }
+
+    span.flatpickr-weekday {
+        background: #0A1020 !important;
+        color: #64748b !important;
+        font-weight: 600 !important;
+        font-size: 11px !important;
+        text-transform: uppercase !important;
+    }
+
+    .flatpickr-innerContainer,
+    .flatpickr-rContainer,
+    .flatpickr-days {
+        background: #111C38 !important;
+    }
+
+    .flatpickr-day {
+        color: #cbd5e1 !important;
+        border-radius: 0.5rem !important;
+        border-color: transparent !important;
+        font-size: 12px !important;
+    }
+
+    .flatpickr-day:hover {
+        background: #1e293b !important;
+        color: #ffffff !important;
+    }
+
+    .flatpickr-day.prevMonthDay,
+    .flatpickr-day.nextMonthDay {
+        color: #475569 !important;
+    }
+
+    .flatpickr-day.selected {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border-radius: 0.5rem !important;
+        border-color: #2563eb !important;
+    }
+
+    .flatpickr-day.today {
+        border-color: #38bdf8 !important;
+    }
+
+    /* Light Mode Flatpickr */
+    html.light .flatpickr-calendar {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    html.light .flatpickr-calendar.arrowTop:before,
+    html.light .flatpickr-calendar.arrowTop:after {
+        border-bottom-color: #f8fafc !important;
+    }
+
+    html.light .flatpickr-calendar.arrowBottom:before,
+    html.light .flatpickr-calendar.arrowBottom:after {
+        border-top-color: #ffffff !important;
+    }
+
+    html.light .flatpickr-months,
+    html.light span.flatpickr-weekday {
+        background: #f8fafc !important;
+    }
+
+    html.light .flatpickr-current-month .flatpickr-monthDropdown-months {
+        color: #0f172a !important;
+    }
+
+    html.light .flatpickr-current-month .flatpickr-monthDropdown-months option {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+    html.light .flatpickr-current-month input.cur-year {
+        color: #0f172a !important;
+    }
+
+    html.light .flatpickr-current-month .numInputWrapper span.arrowUp:after {
+        border-bottom-color: #0f172a !important;
+    }
+
+    html.light .flatpickr-current-month .numInputWrapper span.arrowDown:after {
+        border-top-color: #0f172a !important;
+    }
+
+    html.light .flatpickr-months .flatpickr-prev-month svg,
+    html.light .flatpickr-months .flatpickr-next-month svg {
+        fill: #64748b !important;
+    }
+
+    html.light .flatpickr-months .flatpickr-prev-month:hover svg,
+    html.light .flatpickr-months .flatpickr-next-month:hover svg {
+        fill: #2563eb !important;
+    }
+
+    html.light span.flatpickr-weekday {
+        color: #64748b !important;
+    }
+
+    html.light .flatpickr-innerContainer,
+    html.light .flatpickr-rContainer,
+    html.light .flatpickr-days {
+        background: #ffffff !important;
+    }
+
+    html.light .flatpickr-day {
+        color: #1e293b !important;
+    }
+
+    html.light .flatpickr-day:hover {
+        background: #f1f5f9 !important;
+    }
+
+    html.light .flatpickr-day.prevMonthDay,
+    html.light .flatpickr-day.nextMonthDay {
+        color: #94a3b8 !important;
+    }
+
+    html.light .flatpickr-day.selected {
+        background: #2563eb !important;
+        color: #ffffff !important;
+    }
 </style>
 
-<!-- Interactive JS for Dynamic Card Prefixes & Marital Status -->
+<!-- Interactive Scripts (Dynamic Prefix, Flatpickr & Marital Status) -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const isViewer = <?= $is_viewer ? 'true' : 'false' ?>;
 
+        // ----------------------------------------------------
+        // 1. Flatpickr Setup: DD-MM-YYYY (Single Date Mode)
+        // ----------------------------------------------------
+        const commonPickerConfig = {
+            dateFormat: "Y-m-d", // Form submits MySQL-standard YYYY-MM-DD
+            altInput: true,
+            altFormat: "d-m-Y", // User visually sees DD-MM-YYYY (e.g. 25-10-1990)
+            altInputClass: "w-full bg-[#111C38] border border-darkBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition cursor-pointer" + (isViewer ? " opacity-60 cursor-not-allowed" : ""),
+            clickOpens: !isViewer
+        };
+
+        // Initialize DOB Picker
+        flatpickr("#dobInput", commonPickerConfig);
+
+        // Initialize Anniversary Picker
+        const annivPicker = flatpickr("#anniversaryInput", commonPickerConfig);
+
+        // ----------------------------------------------------
+        // 2. Card Prefix & Live Preview
+        // ----------------------------------------------------
         const cardTypeSelect = document.getElementById('cardTypeSelect');
         const cardPrefixBadge = document.getElementById('cardPrefixBadge');
         const hiddenPrefix = document.getElementById('hiddenCardPrefix');
@@ -426,31 +648,38 @@ $disabled_attr = $is_viewer ? 'disabled' : '';
             suffixInput.addEventListener('input', updatePreview);
         }
 
-        // Initialize state
         updateCardPrefix();
 
         // ----------------------------------------------------
-        // Marital Status & Anniversary Logic
+        // 3. Marital Status & Anniversary Lock Logic
         // ----------------------------------------------------
         const maritalSelect = document.getElementById('maritalStatusSelect');
         const annivInput = document.getElementById('anniversaryInput');
         const annivBadge = document.getElementById('anniversaryBadge');
 
         function toggleAnniversary() {
+            const altInput = annivPicker ? annivPicker.altInput : annivInput;
+
             if (isViewer) {
-                annivInput.disabled = true;
+                if (altInput) altInput.disabled = true;
                 return;
             }
 
             if (maritalSelect.value === 'Married') {
-                annivInput.disabled = false;
-                annivInput.classList.remove('opacity-30', 'cursor-not-allowed');
+                if (altInput) {
+                    altInput.disabled = false;
+                    altInput.classList.remove('opacity-30', 'cursor-not-allowed');
+                }
                 annivBadge.textContent = '(required if married)';
                 annivBadge.classList.replace('text-slate-500', 'text-blue-400');
             } else {
-                annivInput.disabled = true;
-                annivInput.value = '';
-                annivInput.classList.add('opacity-30', 'cursor-not-allowed');
+                if (annivPicker) {
+                    annivPicker.clear();
+                }
+                if (altInput) {
+                    altInput.disabled = true;
+                    altInput.classList.add('opacity-30', 'cursor-not-allowed');
+                }
                 annivBadge.textContent = '(not married - locked)';
                 annivBadge.classList.replace('text-blue-400', 'text-slate-500');
             }
