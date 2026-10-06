@@ -1,11 +1,15 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /
 
-    # If the request is not an actual file or folder
+    # 1. CRITICAL: Block public access to .env, git, and composer files
+    <FilesMatch "^\.env|\.git|composer\.(json|lock)">
+        Require all denied
+    </FilesMatch>
+
+    # 2. Exclude real files and directories (CSS, JS, images in /assets)
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
 
-    # Pass the URI to index.php
+    # 3. Universal CI3 rewrite (The ?/ works on both XAMPP and Cloudways/PHP-FPM)
     RewriteRule ^(.*)$ index.php?/$1 [L,QSA]
 </IfModule>
