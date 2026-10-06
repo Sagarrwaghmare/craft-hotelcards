@@ -70,9 +70,10 @@ define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'developm
  * Different environments will require different levels of error reporting.
  * By default development will show errors but testing and live will hide them.
  */
+
 /*
 |--------------------------------------------------------------------------
-| LOAD .ENV FILE
+| SAFE .ENV LOADER (Cloudways & Shared-Host Compatible)
 |--------------------------------------------------------------------------
 */
 $env_path = __DIR__ . '/.env';
@@ -80,29 +81,27 @@ if (file_exists($env_path)) {
 	$lines = file($env_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 	foreach ($lines as $line) {
 		$line = trim($line);
-		// Skip comments and empty lines
+		// Ignore comments and blank lines
 		if ($line === '' || strpos($line, '#') === 0) {
 			continue;
 		}
 		if (strpos($line, '=') !== false) {
 			list($key, $val) = explode('=', $line, 2);
 			$key = trim($key);
-			$val = trim($val, " \t\n\r\0\x0B\"'"); // Strip whitespace and quotes
-			putenv("{$key}={$val}");
-			$_ENV[$key] = $val;
+			$val = trim($val, " \t\n\r\0\x0B\"'"); // Strip quotes & whitespace
+
+			// Store directly in PHP superglobals (No putenv needed!)
+			$_ENV[$key]    = $val;
 			$_SERVER[$key] = $val;
 		}
 	}
 }
 
-// Global helper function to read .env with fallback defaults
+// Global env() helper function
 if (!function_exists('env')) {
 	function env($key, $default = null)
 	{
-		$val = getenv($key);
-		if ($val === false) {
-			$val = $_ENV[$key] ?? $_SERVER[$key] ?? $default;
-		}
+		$val = $_ENV[$key] ?? $_SERVER[$key] ?? $default;
 		if ($val === 'true')  return true;
 		if ($val === 'false') return false;
 		if ($val === 'null')  return null;
