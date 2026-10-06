@@ -192,7 +192,5 @@ If this rule is removed, anyone on the internet can navigate to ``https://yourdo
 Default Seed Credentials
 ***************************
 
-* **Password for all seed users:** ``admin123``
-* **Administrator:** ``admin`` / ``admin@system.com``
-* **Editor:** ``sjenkins`` / ``sarah.j@system.com``
-* **Viewer:** ``jhalpert`` / ``jim.h@system.com``
+* **Password for all seed users:** 
+* **Administrator:** ``admin`` / ``admin2``
