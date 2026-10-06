@@ -25,7 +25,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = 'https://hotelheritage.mediaworks.net.in/';
+// $config['base_url'] = 'https://hotelheritage.mediaworks.net.in/';
 // $config['base_url'] = 'http://localhost/craft/hotelcards/';
 
 /*
@@ -56,9 +56,11 @@ $config['index_page'] = '';
 | WARNING: If you set this to 'PATH_INFO', URIs will always be URL-decoded!
 */
 // $config['uri_protocol']    = 'PATH_INFO';
-$config['uri_protocol'] = 'REQUEST_URI';
+// $config['uri_protocol'] = 'REQUEST_URI';
 // var_dump($_SERVER['REQUEST_URI'],$_SERVER['QUERY_STRING'],$_SERVER['PATH_INFO'],);
 
+$config['base_url']     = env('BASE_URL', 'http://localhost/craft/hotelcards/');
+$config['uri_protocol'] = env('URI_PROTOCOL', 'PATH_INFO');
 /*
 |--------------------------------------------------------------------------
 | URL suffix
